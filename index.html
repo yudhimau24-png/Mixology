@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocktail AI - Premium Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        img { -webkit-user-drag: none; pointer-events: none; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+        input:-webkit-autofill { -webkit-box-shadow: 0 0 0 30px #020617 inset !important; -webkit-text-fill-color: #e2e8f0 !important; border-radius: 0.75rem !important; }
+        #securityBlackout { display: none; position: fixed; inset: 0; background-color: #000000; z-index: 99999999; align-items: center; justify-content: center; flex-direction: column; color: #f59e0b; }
+        @keyframes blob { 0% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0, 0) scale(1); } }
+        .animate-blob { animation: blob 15s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        @keyframes scrollText { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .animate-marquee { display: inline-block; white-space: nowrap; animation: scrollText 30s linear infinite; }
+        .marquee-container { overflow: hidden; position: relative; width: 100%; }
+        .animate-spin-slow { animation: spin 15s linear infinite; }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen selection:bg-amber-500 selection:text-slate-950 relative overflow-x-hidden bg-black flex flex-col justify-between">
+
+    <!-- Latar Belakang -->
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <video autoplay loop muted playsinline class="w-full h-full object-cover opacity-60">
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-bartender-making-a-cocktail-with-a-shaker-43759-large.mp4" type="video/mp4">
+        </video>
+    </div>
+    <div class="fixed inset-0 z-10 bg-slate-950/80 pointer-events-none"></div>
+    <div class="fixed inset-0 z-20 overflow-hidden pointer-events-none">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/15 rounded-full filter blur-[100px] animate-blob"></div>
+        <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-blue-500/15 rounded-full filter blur-[100px] animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-32 left-1/3 w-96 h-96 bg-emerald-500/15 rounded-full filter blur-[100px] animate-blob animation-delay-4000"></div>
+    </div>
+
+    <!-- NAVBAR UMUM -->
+    <header class="sticky top-0 z-40 bg-slate-950/60 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
+        <div class="w-full max-w-[95%] mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3 group cursor-pointer" onclick="location.reload()">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                    <i class="fa-solid font-bold text-xl fa-martini-glass-citrus"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-200 via-amber-400 to-amber-500 bg-clip-text text-transparent drop-shadow-md">Mixology</h1>
+                    <p class="text-[10px] text-slate-300 uppercase tracking-widest font-semibold drop-shadow-md">The Speakeasy</p>
+                </div>
+            </div>
+            <button id="btnLogout" onclick="logout()" class="hidden items-center space-x-2 bg-slate-800/50 hover:bg-slate-700 hover:text-white text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold border border-white/5 hover:border-white/10 active:scale-95 transition-all duration-200 backdrop-blur-md">
+                <i class="fa-solid fa-right-from-bracket"></i><span class="hidden sm:inline">Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="w-full max-w-[95%] mx-auto px-4 md:px-6 py-8 relative z-30 flex-grow">
+
+        <!-- SCREEN 1: PILIH PERAN -->
+        <div id="roleSelectionScreen" class="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in-up">
+            <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-lg text-center">Choose Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">Experience</span></h2>
+            <p class="text-slate-300 text-sm md:text-lg mb-12 text-center max-w-2xl">Are you here to explore our curated digital menu, or are you the mixologist behind the bar?</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+                <div onclick="selectGuest()" class="cursor-pointer bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-amber-500/40 p-8 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-colors"></div>
+                    <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform duration-300 relative z-10">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2 relative z-10">Guest Menu</h3>
+                    <p class="text-sm text-slate-400 relative z-10">Explore our digital cocktail menu and get personalized AI recommendations.</p>
+                </div>
+                <div onclick="selectAdmin()" class="cursor-pointer bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-blue-500/40 p-8 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors"></div>
+                    <div class="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform duration-300 relative z-10">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2 relative z-10">Mixologist Vault</h3>
+                    <p class="text-sm text-slate-400 relative z-10">Manage database, extract recipes from PDFs via AI, and access global collections.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: LOGIN / REGISTER PANEL -->
+        <div id="loginPanel" class="hidden max-w-md mx-auto my-12 bg-slate-900/80 backdrop-blur-2xl border border-white/10 p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden animate-fade-in-up">
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl"></div>
+            <div class="text-center mb-6 relative z-10">
+                <div class="w-14 h-14 bg-gradient-to-tr from-amber-500/20 to-amber-400/5 border border-amber-500/30 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
+                    <i class="fa-solid fa-lock" id="loginIcon"></i>
+                </div>
+                <h2 id="loginTitle" class="text-2xl font-bold text-white drop-shadow-md">Access</h2>
+                <p id="loginSubtitle" class="text-slate-300 text-[11px] mt-1">Please log in or sign up to continue.</p>
+            </div>
+
+            <!-- TAB SWITCHER (Dibungkus agar bisa disembunyikan) -->
+            <div id="authTabsContainer" class="flex border-b border-white/10 mb-6 relative z-10">
+                <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="w-1/2 py-3 text-amber-400 text-sm border-b-2 border-amber-500 font-bold transition-all">LOGIN</button>
+                <button id="tabSignupBtn" onclick="switchAuthTab('signup')" class="w-1/2 py-3 text-slate-400 text-sm font-bold hover:text-white transition-all">SIGNUP</button>
+            </div>
+
+            <div class="relative z-10">
+                <div id="formLogin" class="space-y-4">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-300 mb-1 ml-1">Email / Username:</label>
+                        <input type="text" id="loginEmail" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-3 px-4 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all" style="pointer-events: auto;">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-300 mb-1 ml-1">Password:</label>
+                        <div class="relative">
+                            <input type="password" id="loginPassword" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-3 pl-4 pr-10 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all" style="pointer-events: auto;">
+                            <i class="fa-solid fa-eye absolute right-4 top-3.5 text-slate-500 cursor-pointer hover:text-white transition-colors" onclick="togglePassword('loginPassword')"></i>
+                        </div>
+                    </div>
+                    <button onclick="processLogin()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3.5 rounded-xl text-sm mt-2 shadow-lg active:scale-95 transition-all">LOGIN</button>
+                </div>
+
+                <div id="formSignup" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-300 mb-1 ml-1">Nama Lengkap:</label>
+                        <input type="text" id="regFullName" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2.5 px-4 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all" style="pointer-events: auto;">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-300 mb-1 ml-1">Email:</label>
+                        <input type="email" id="regEmail" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2.5 px-4 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all" style="pointer-events: auto;">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-300 mb-1 ml-1">Buat Username:</label>
+                        <input type="text" id="regUsername" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2.5 px-4 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all" style="pointer-events: auto;">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-300 mb-1 ml-1">Buat Password:</label>
+                        <div class="relative">
+                            <input type="password" id="regPassword" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2.5 pl-4 pr-10 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all" style="pointer-events: auto;">
+                            <i class="fa-solid fa-eye absolute right-4 top-3.5 text-slate-500 cursor-pointer hover:text-white transition-colors" onclick="togglePassword('regPassword')"></i>
+                        </div>
+                    </div>
+                    <button onclick="processRegister()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3.5 rounded-xl text-sm mt-2 shadow-lg active:scale-95 transition-all">REGISTRASI AKUN</button>
+                </div>
+
+                <p id="authMsg" class="mt-4 text-center text-rose-400 text-xs hidden p-3 rounded-xl backdrop-blur-sm"></p>
+                <button onclick="backToRoles()" class="w-full text-center text-xs text-slate-400 hover:text-white mt-5 underline">Back to Role Selection</button>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SCREEN 3A: GUEST MENU (PELANGGAN)          -->
+        <!-- ========================================== -->
+        <div id="guestDashboard" class="hidden space-y-8 animate-fade-in-up">
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-6 mb-4 p-6 lg:p-8 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-32 -left-32 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop" alt="Bar" class="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full object-cover border-[4px] border-amber-500/40 shadow-xl flex-shrink-0 z-10 relative bg-slate-800">
+                <div class="text-center md:text-left mt-2 z-10 relative">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white drop-shadow-md mb-2">Welcome to <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">The Speakeasy</span></h2>
+                    <p class="text-slate-300 text-xs sm:text-sm md:text-base max-w-3xl leading-relaxed">
+                        Explore our exclusive digital cocktail menu. Tell the AI what flavors you enjoy, or search the global database for any drink in the world.
+                    </p>
+                </div>
+            </div>
+
+            <!-- FITUR LIVE FEED & HISTORY TEXT -->
+            <div id="triviaWidget" class="mb-8 bg-slate-900/50 backdrop-blur-2xl border border-amber-500/30 rounded-2xl p-4 md:p-5 flex flex-col md:flex-row items-center gap-5 md:gap-6 shadow-[0_0_25px_rgba(245,158,11,0.15)] relative overflow-hidden group max-w-5xl mx-auto transition-opacity duration-700">
+                <div class="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-transparent to-transparent pointer-events-none"></div>
+                
+                <div class="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden flex-shrink-0 shadow-[0_0_20px_rgba(245,158,11,0.5)] border-2 border-amber-500/60 z-10">
+                    <img id="triviaImage" src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop" class="w-full h-full object-cover animate-spin-slow" alt="Cocktail">
+                    <div class="absolute inset-0 m-auto w-3 h-3 bg-slate-900 rounded-full border border-amber-500/50"></div>
+                </div>
+
+                <div class="flex-grow w-full overflow-hidden z-10 text-center md:text-left">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-1.5 md:mb-2 gap-2">
+                        <h4 class="text-[10px] md:text-xs font-bold text-amber-500 uppercase tracking-widest flex items-center justify-center md:justify-start gap-2">
+                            <i class="fa-solid fa-satellite-dish animate-pulse"></i> Global Live Spotlight
+                        </h4>
+                        <span id="triviaBadge" class="text-[9px] md:text-[10px] font-extrabold bg-amber-500/20 text-amber-400 px-3 py-1 rounded-lg border border-amber-500/30 inline-block mx-auto md:mx-0 shadow-inner">Loading...</span>
+                    </div>
+                    <h3 id="triviaTitle" class="text-xl md:text-2xl font-extrabold text-white drop-shadow-md mb-2 truncate">Discovering History...</h3>
+                    <div class="marquee-container bg-black/40 rounded-xl py-2.5 px-3 border border-white/10 shadow-inner">
+                        <p id="triviaMarquee" class="text-[11px] md:text-xs text-amber-100/90 font-medium tracking-wide animate-marquee">Menghubungkan ke database sejarah cocktail di seluruh dunia...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-5xl mx-auto">
+                <div class="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-xl">
+                    <div class="text-center mb-4"><h3 class="text-lg font-bold text-white"><i class="fa-solid fa-wand-magic-sparkles text-amber-500 mr-2"></i> Mixology Suggestion</h3></div>
+                    <div class="flex gap-3">
+                        <div class="relative flex-grow">
+                            <i class="fa-solid fa-lemon absolute left-4 top-3.5 text-slate-500 text-sm"></i>
+                            <input type="text" id="guestIngredientInput" placeholder="Flavors (e.g. Sweet, Mint)..." class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-sm text-white focus:outline-none focus:border-amber-500/50" style="pointer-events: auto;">
+                        </div>
+                        <button onclick="getGuestRecommendations()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm active:scale-95 shadow-lg">Search</button>
+                    </div>
+                </div>
+                <div class="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-xl">
+                    <div class="text-center mb-4"><h3 class="text-lg font-bold text-white"><i class="fa-solid fa-globe text-blue-500 mr-2"></i> Global Cocktail Search</h3></div>
+                    <div class="flex gap-3">
+                        <div class="relative flex-grow">
+                            <i class="fa-solid fa-martini-glass absolute left-4 top-3.5 text-slate-500 text-sm"></i>
+                            <input type="text" id="guestGlobalInput" placeholder="Name (e.g. Margarita)..." class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-sm text-white focus:outline-none focus:border-blue-500/50" style="pointer-events: auto;">
+                        </div>
+                        <button onclick="searchGuestGlobal()" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 text-white font-bold px-6 py-3 rounded-xl text-sm active:scale-95 shadow-lg">Search</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mb-8">
+                <button onclick="loadGuestRecipes()" class="text-xs text-slate-400 hover:text-white underline"><i class="fa-solid fa-rotate-right mr-1"></i> Reset to Full Menu</button>
+            </div>
+
+            <div class="bg-transparent">
+                <div class="flex justify-between items-center mb-6 pl-2 border-l-4 border-amber-500">
+                    <h3 class="text-xl font-bold text-white" id="guestGridTitleText">Our Signature Collection</h3>
+                    <button onclick="downloadExcelWithImages()" class="bg-emerald-600/80 hover:bg-emerald-500 text-xs font-bold px-4 py-2 rounded-xl text-white transition-all shadow-lg"><i class="fa-solid fa-file-excel mr-1"></i> Export Excel</button>
+                </div>
+                <div id="guestRecipesContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6"></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SCREEN 3B: ADMIN DASHBOARD (MIXOLOGIST)    -->
+        <!-- ========================================== -->
+        <div id="adminDashboard" class="hidden space-y-8 animate-fade-in-up">
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8 p-6 lg:p-8 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-32 -left-32 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <img src="./profile.png" alt="Profile" class="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full object-cover border-[4px] border-blue-500/40 shadow-xl flex-shrink-0 z-10 relative bg-slate-800" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Mixologist&background=2563eb&color=fff&size=200';">
+                <div class="text-center md:text-left mt-2 z-10 relative">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white drop-shadow-md mb-2">Welcome Back, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">Mixologist</span></h2>
+                    <p class="text-slate-300 text-xs sm:text-sm md:text-base max-w-3xl leading-relaxed">
+                        Manage your exclusive recipe vault, extract cocktail secrets from PDFs using AI, and access global databases.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ADMIN TOOLS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-20">
+                <div class="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-5 lg:p-6 rounded-2xl shadow-xl hover:shadow-[0_0_30px_rgba(245,158,11,0.15)] hover:border-amber-500/40 transition-all duration-300 flex flex-col group transform hover:-translate-y-1.5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 group-hover:scale-110 group-hover:bg-amber-500/20 transition-all"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                        <h3 class="text-sm font-bold text-white">AI Suggestion</h3>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-4 flex-grow leading-relaxed">Find recipes based on your available stock.</p>
+                    <div class="relative mb-4">
+                        <i class="fa-solid fa-lemon absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                        <input type="text" id="adminIngredientInput" placeholder="Whiskey, Mint..." class="w-full bg-slate-950/80 border border-white/10 rounded-xl py-2 pl-8 pr-3 text-xs text-white focus:outline-none focus:border-amber-500/50 transition-colors" style="pointer-events: auto;">
+                    </div>
+                    <button onclick="getAdminRecommendations()" class="w-full bg-slate-800 hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-500 hover:text-slate-950 text-white font-bold py-2.5 rounded-xl text-xs transition-all mt-auto border border-white/5 hover:border-transparent active:scale-95 shadow-lg">Match</button>
+                </div>
+
+                <div class="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-5 lg:p-6 rounded-2xl shadow-xl hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] hover:border-blue-500/40 transition-all duration-300 flex flex-col group transform hover:-translate-y-1.5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 group-hover:bg-blue-500/20 transition-all"><i class="fa-solid fa-globe"></i></div>
+                        <h3 class="text-sm font-bold text-white">Global DB Search</h3>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-4 flex-grow leading-relaxed">Search standard internet cocktails worldwide.</p>
+                    <div class="relative mb-4">
+                        <i class="fa-solid fa-martini-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                        <input type="text" id="adminGlobalInput" placeholder="Margarita..." class="w-full bg-slate-950/80 border border-white/10 rounded-xl py-2 pl-8 pr-3 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-colors" style="pointer-events: auto;">
+                    </div>
+                    <button onclick="searchAdminGlobal()" class="w-full bg-slate-800 hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-500 hover:text-white text-white font-bold py-2.5 rounded-xl text-xs transition-all mt-auto border border-white/5 hover:border-transparent active:scale-95 shadow-lg">Search</button>
+                </div>
+
+                <div class="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-5 lg:p-6 rounded-2xl shadow-xl hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] hover:border-emerald-500/40 transition-all duration-300 flex flex-col group transform hover:-translate-y-1.5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all"><i class="fa-solid fa-file-pdf"></i></div>
+                        <h3 class="text-sm font-bold text-white">PDF AI Import</h3>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-4 flex-grow leading-relaxed">Extract menus directly from E-Books using AI.</p>
+                    <div class="relative mb-4 bg-slate-950/80 border border-white/10 rounded-xl p-1.5 focus-within:border-emerald-500/50 transition-colors">
+                        <input type="file" id="adminPdfUpload" accept=".pdf" class="block w-full text-[10px] text-slate-300 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-500/20 file:text-emerald-400 hover:file:bg-emerald-500/30 file:font-bold file:cursor-pointer cursor-pointer" style="pointer-events: auto;">
+                    </div>
+                    <button onclick="uploadAdminPDF()" class="w-full bg-slate-800 hover:bg-gradient-to-r hover:from-emerald-500 hover:to-teal-500 hover:text-slate-950 text-white font-bold py-2.5 rounded-xl text-xs transition-all mt-auto border border-white/5 hover:border-transparent active:scale-95 shadow-lg">Extract</button>
+                </div>
+
+                <div class="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-5 lg:p-6 rounded-2xl shadow-xl hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] hover:border-purple-500/40 transition-all duration-300 flex flex-col group transform hover:-translate-y-1.5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 group-hover:bg-purple-500/20 transition-all"><i class="fa-solid fa-file-excel"></i></div>
+                        <h3 class="text-sm font-bold text-white">Import & Custom</h3>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-4 flex-grow leading-relaxed">Import via Excel or add recipe manually.</p>
+                    <div class="relative mb-4 bg-slate-950/80 border border-white/10 rounded-xl p-1.5 focus-within:border-purple-500/50 transition-colors">
+                        <input type="file" id="adminExcelUpload" accept=".xlsx, .xls, .csv" class="block w-full text-[10px] text-slate-300 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-purple-500/20 file:text-purple-400 hover:file:bg-purple-500/30 file:font-bold file:cursor-pointer cursor-pointer" style="pointer-events: auto;">
+                    </div>
+                    <div class="flex gap-2 mt-auto">
+                        <button onclick="processExcelImport()" class="w-full bg-slate-800 hover:bg-gradient-to-r hover:from-purple-500 hover:to-fuchsia-500 hover:text-white text-white font-bold py-2.5 rounded-xl text-xs transition-all border border-white/5 hover:border-transparent active:scale-95 shadow-lg flex items-center justify-center gap-1"><i class="fa-solid fa-upload"></i> Upload</button>
+                        <button onclick="openAddModal()" class="w-12 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all border border-white/5 active:scale-95 shadow-lg flex items-center justify-center flex-shrink-0" title="Input Manual"><i class="fa-solid fa-pen"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABEL DATABASE VAULT -->
+            <div class="bg-slate-900/50 backdrop-blur-2xl border border-white/10 p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-white/10 pb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white" id="adminGridTitleText">My Local Vault</h3>
+                        <p class="text-[10px] text-slate-400" id="adminRecipeCounter">Loading...</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="downloadExcelWithImages()" class="bg-emerald-600/80 hover:bg-emerald-500 text-xs font-bold px-4 py-2 rounded-xl text-white transition-all"><i class="fa-solid fa-file-excel mr-1"></i> Export Data</button>
+                        <button onclick="loadAdminRecipes()" class="bg-slate-800 hover:bg-slate-700 text-xs font-bold px-4 py-2 rounded-xl text-white transition-all"><i class="fa-solid fa-rotate-right mr-1"></i> Reload</button>
+                    </div>
+                </div>
+                <div id="adminRecipesContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6"></div>
+            </div>
+
+            <!-- FITUR BARU: TABEL DATABASE GUEST & PEMBAYARAN -->
+            <div class="bg-slate-900/50 backdrop-blur-2xl border border-white/10 p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl mt-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-white/10 pb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-users text-amber-500 mr-2"></i> Guest Database & Payments</h3>
+                        <p class="text-[10px] text-slate-400">Manage signed-up guests and track QRIS premium payments.</p>
+                    </div>
+                    <button onclick="loadAdminUsers()" class="bg-slate-800 hover:bg-slate-700 text-xs font-bold px-4 py-2 rounded-xl text-white transition-all"><i class="fa-solid fa-rotate-right mr-1"></i> Refresh Data</button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300 border-collapse">
+                        <thead class="text-xs uppercase bg-slate-950/50 text-slate-400 border-b border-white/10">
+                            <tr>
+                                <th scope="col" class="px-4 py-4 font-bold">Nama Lengkap</th>
+                                <th scope="col" class="px-4 py-4 font-bold">Username</th>
+                                <th scope="col" class="px-4 py-4 font-bold">Email</th>
+                                <th scope="col" class="px-4 py-4 font-bold">Total Pembayaran</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUsersTableBody" class="divide-y divide-white/5">
+                            <!-- Data akan dimuat lewat JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- LOADING INDICATOR -->
+        <div id="loadingIndicator" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div class="bg-slate-900 border border-white/20 p-8 rounded-3xl text-center shadow-2xl">
+                <div class="inline-block relative w-16 h-16 mb-4">
+                    <div class="absolute inset-0 border-4 border-amber-500/20 rounded-full"></div>
+                    <div class="absolute inset-0 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <p class="text-sm font-bold text-white tracking-widest uppercase">Processing</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- PAYMENT MODAL UNTUK GUEST -->
+    <div id="paymentModal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer" onclick="closePaymentModal()"></div>
+        <div id="paymentModalContent" class="relative bg-slate-900 border border-white/10 rounded-3xl w-full max-w-sm p-8 shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden text-center">
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl"></div>
+            <div class="w-16 h-16 bg-gradient-to-tr from-amber-500/20 to-amber-400/5 border border-amber-500/30 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner relative z-10">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-2 relative z-10">Premium Export</h3>
+            <p class="text-slate-300 text-xs mb-6 relative z-10">Unlock the complete recipe vault in Excel format, including high-res images and exact measurements.</p>
+            <div class="bg-slate-950/50 border border-amber-500/30 rounded-2xl p-4 mb-6 relative z-10 shadow-inner">
+                <span class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider font-bold">One-time payment</span>
+                <span class="text-3xl font-extrabold text-amber-400">Rp 49.000</span>
+            </div>
+            <div class="space-y-3 relative z-10">
+                <!-- Tombol Pay ini sekarang akan hit database -->
+                <button onclick="processPayment()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3.5 rounded-xl text-sm shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-qrcode"></i> Pay with QRIS / E-Wallet
+                </button>
+                <button onclick="closePaymentModal()" class="w-full bg-slate-800/70 hover:bg-slate-700/80 text-slate-300 font-bold py-3.5 rounded-xl text-sm border border-white/5 active:scale-95 transition-all">
+                    Maybe Later
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FORM UNTUK ADD / EDIT RECIPE -->
+    <div id="addRecipeModal" class="fixed inset-0 z-[160] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer" onclick="closeAddModal()"></div>
+        <div id="addRecipeModalContent" class="relative bg-slate-900 border border-white/10 rounded-3xl w-full max-w-2xl p-6 md:p-8 shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden">
+            <h3 id="addRecipeModalTitle" class="text-xl md:text-2xl font-bold text-white mb-4"><i class="fa-solid fa-plus text-amber-500 mr-2"></i> Add New Cocktail</h3>
+            <div class="space-y-4 relative z-10">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Cocktail Name *</label>
+                        <input type="text" id="addName" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-amber-500/50" style="pointer-events: auto;">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Category (e.g. Classic)</label>
+                        <input type="text" id="addCategory" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-amber-500/50" style="pointer-events: auto;">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] text-slate-400 mb-1">Glassware</label>
+                    <input type="text" id="addGlass" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-amber-500/50" style="pointer-events: auto;">
+                </div>
+                <div>
+                    <label class="block text-[11px] text-slate-400 mb-1">Ingredients (Type 1 per line) *</label>
+                    <textarea id="addIngredients" rows="3" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2 px-3 text-sm text-white custom-scroll focus:outline-none focus:border-amber-500/50" placeholder="50ml Whiskey&#10;20ml Lemon Juice" style="pointer-events: auto;"></textarea>
+                </div>
+                <div>
+                    <label class="block text-[11px] text-slate-400 mb-1">Instructions (Type 1 step per line) *</label>
+                    <textarea id="addInstructions" rows="3" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2 px-3 text-sm text-white custom-scroll focus:outline-none focus:border-amber-500/50" placeholder="Shake well with ice.&#10;Strain into glass." style="pointer-events: auto;"></textarea>
+                </div>
+                <div class="flex gap-3 pt-3">
+                    <button onclick="submitManualRecipe()" class="flex-grow bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl text-sm transition-all active:scale-95 shadow-lg" id="btnSubmitRecipe">Save Cocktail</button>
+                    <button onclick="closeAddModal()" class="w-1/3 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-sm transition-all border border-white/10">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETAILS RECIPE -->
+    <div id="recipeModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-2 sm:p-4 md:p-6 opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer" onclick="closeRecipeModal()"></div>
+        <div class="relative bg-slate-900 border border-white/10 rounded-2xl sm:rounded-3xl w-full max-w-4xl max-h-[85vh] sm:max-h-[90vh] flex flex-col shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden" id="recipeModalContent">
+            <div class="flex flex-col justify-end p-4 md:p-6 border-b border-white/10 relative overflow-hidden h-40 sm:h-48 md:h-56 shrink-0">
+                <img id="modalImage" src="" class="absolute inset-0 w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-slate-900/10"></div>
+                <div class="z-10 relative mt-auto pr-8">
+                    <h3 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-2 drop-shadow-lg" id="modalTitle">Recipe Name</h3>
+                    <div class="flex flex-wrap gap-2 text-[10px] sm:text-xs text-slate-200 font-medium items-center" id="modalBadges"></div>
+                </div>
+                <button onclick="closeRecipeModal()" class="absolute top-3 right-3 sm:top-4 sm:right-4 text-white/70 hover:text-white bg-black/40 p-2 rounded-full z-20 backdrop-blur-md" style="pointer-events: auto;">
+                    <i class="fa-solid fa-xmark w-6 h-6 flex items-center justify-center"></i>
+                </button>
+            </div>
+            <div class="p-4 sm:p-6 overflow-y-auto custom-scroll flex-grow text-slate-200 bg-slate-900/50">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                    <div>
+                        <h4 class="text-xs sm:text-sm font-extrabold text-amber-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa-solid fa-flask"></i> Ingredients</h4>
+                        <ul id="modalIngredients" class="space-y-2 bg-slate-950/50 p-4 rounded-xl sm:rounded-2xl border border-white/5 shadow-inner"></ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xs sm:text-sm font-extrabold text-amber-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa-solid fa-list-check"></i> Instructions</h4>
+                        <div id="modalInstructions" class="space-y-3 bg-slate-950/50 p-4 rounded-xl sm:rounded-2xl border border-white/5 shadow-inner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p') || (e.ctrlKey && e.key === 's') || e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'C' || e.key === 'c'))) {
+                e.preventDefault(); navigator.clipboard.writeText(''); alert("Security Warning: Screenshots and saving are disabled.");
+            }
+        });
+        const blackoutScreen = document.getElementById('securityBlackout');
+        window.addEventListener('blur', () => blackoutScreen.style.display = 'flex');
+        window.addEventListener('focus', () => blackoutScreen.style.display = 'none');
+
+        let userToken = localStorage.getItem('cocktail_token');
+        let savedRole = localStorage.getItem('cocktail_role');
+        let currentRole = null; 
+        let intendedRole = null; 
+        const API_URL = 'http://localhost:3000/api';
+        let currentDisplayedRecipes = []; 
+        let currentGlobalRecipes = []; 
+        
+        let editingRecipeId = null;
+        let triviaInterval = null;
+
+        const cocktailHistories = [
+            "Tahukah Anda? Kata 'Cocktail' pertama kali muncul pada tahun 1806 di surat kabar The Balance and-Columbian Repository, didefinisikan sebagai campuran minuman keras, air, dan pemahit (bitters).",
+            "Era Pelarangan Alkohol (Prohibition) di Amerika Serikat (1920-1933) justru memicu popularitas cocktail, karena bartender harus mencampur jus buah dan madu untuk menutupi rasa alkohol selundupan.",
+            "Margarita, salah satu cocktail paling ikonik, diyakini diciptakan pada 1938 di Meksiko oleh Carlos Herrera untuk seorang penari yang alergi terhadap semua jenis alkohol kecuali Tequila.",
+            "Mojito berasal dari Kuba pada abad ke-16, awalnya diracik sebagai ramuan obat tradisional berbahan dasar rum tebu, daun mint liar, jeruk nipis, dan gula.",
+            "Old Fashioned, yang diciptakan pada awal abad ke-19, diberi nama sesuai dengan jenis gelas tempat ia disajikan.",
+            "Cosmopolitan diciptakan pada era 1980-an, tetapi meledak menjadi fenomena gaya hidup global berkat kemunculannya dalam serial TV populer 'Sex and the City'."
+        ];
+
+        if (userToken && savedRole) { 
+            if (savedRole === 'guest') showGuestDashboard();
+            else showAdminDashboard();
+        }
+
+        function showLoading(show) {
+            const loader = document.getElementById('loadingIndicator');
+            if (show) { loader.classList.remove('hidden'); loader.classList.add('flex'); } 
+            else { loader.classList.add('hidden'); loader.classList.remove('flex'); }
+        }
+
+        async function fetchCocktailTrivia() {
+            const widget = document.getElementById('triviaWidget');
+            const imgEl = document.getElementById('triviaImage');
+            const titleEl = document.getElementById('triviaTitle');
+            const badgeEl = document.getElementById('triviaBadge');
+            const marqueeEl = document.getElementById('triviaMarquee');
+            
+            if(!widget) return;
+            try {
+                widget.style.opacity = 0.3;
+                const res = await fetch('https://www.thecocktaildb.com/api/json/v1/1/random.php');
+                const data = await res.json();
+                const drink = data.drinks[0];
+                let ingredientsList = [];
+                for(let i=1; i<=5; i++) { if(drink[`strIngredient${i}`]) ingredientsList.push(drink[`strIngredient${i}`]); }
+                const randomHistory = cocktailHistories[Math.floor(Math.random() * cocktailHistories.length)];
+                
+                setTimeout(() => {
+                    imgEl.src = drink.strDrinkThumb;
+                    titleEl.innerText = drink.strDrink;
+                    badgeEl.innerText = drink.strAlcoholic || 'Unknown';
+                    const runningText = `🍹 Kategori: <span class="font-extrabold text-amber-500">${drink.strCategory}</span>  •  🥂 Disajikan di: <span class="text-amber-300">${drink.strGlass}</span>  •  🌿 Bahan Utama: <span class="text-amber-300">${ingredientsList.join(', ')}</span>  •  📜 <span class="text-white">${randomHistory}</span>  •  💡 Cara Pembuatan: ${drink.strInstructions.substring(0, 150)}...`;
+                    marqueeEl.style.animation = 'none';
+                    marqueeEl.offsetHeight; 
+                    marqueeEl.style.animation = null;
+                    marqueeEl.innerHTML = runningText;
+                    widget.style.opacity = 1;
+                }, 500); 
+            } catch (err) {}
+        }
+
+        function switchAuthTab(tab) {
+            const loginBtn = document.getElementById('tabLoginBtn'), signupBtn = document.getElementById('tabSignupBtn');
+            const formLogin = document.getElementById('formLogin'), formSignup = document.getElementById('formSignup');
+            const msg = document.getElementById('authMsg'); msg.classList.add('hidden');
+            if (tab === 'login') {
+                loginBtn.className = "w-1/2 py-3 text-amber-400 text-sm border-b-2 border-amber-500 font-bold transition-all";
+                signupBtn.className = "w-1/2 py-3 text-slate-400 text-sm font-bold hover:text-white transition-all";
+                formLogin.classList.remove('hidden'); formSignup.classList.add('hidden');
+            } else {
+                signupBtn.className = "w-1/2 py-3 text-amber-400 text-sm border-b-2 border-amber-500 font-bold transition-all";
+                loginBtn.className = "w-1/2 py-3 text-slate-400 text-sm font-bold hover:text-white transition-all";
+                formSignup.classList.remove('hidden'); formLogin.classList.add('hidden');
+            }
+        }
+        function togglePassword(id) { const input = document.getElementById(id); input.type = input.type === "password" ? "text" : "password"; }
+        
+        function selectGuest() { 
+            intendedRole = 'guest'; 
+            document.getElementById('roleSelectionScreen').classList.add('hidden'); 
+            document.getElementById('loginTitle').innerText = "Guest Access"; 
+            document.getElementById('loginSubtitle').innerText = "Please log in or sign up to explore the menu."; 
+            document.getElementById('authTabsContainer').classList.remove('hidden'); 
+            document.getElementById('loginPanel').classList.remove('hidden'); 
+            switchAuthTab('login'); 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        }
+        function selectAdmin() { 
+            intendedRole = 'admin'; 
+            document.getElementById('roleSelectionScreen').classList.add('hidden'); 
+            document.getElementById('loginTitle').innerText = "Staff Access"; 
+            document.getElementById('loginSubtitle').innerText = "Please log in to manage your vault."; 
+            document.getElementById('authTabsContainer').classList.add('hidden'); 
+            document.getElementById('loginPanel').classList.remove('hidden'); 
+            switchAuthTab('login'); 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        }
+        function backToRoles() { document.getElementById('loginPanel').classList.add('hidden'); document.getElementById('roleSelectionScreen').classList.remove('hidden'); intendedRole = null; }
+        
+        function showGuestDashboard() { 
+            currentRole = 'guest'; 
+            document.getElementById('roleSelectionScreen').classList.add('hidden'); 
+            document.getElementById('loginPanel').classList.add('hidden'); 
+            document.getElementById('adminDashboard').classList.add('hidden'); 
+            document.getElementById('guestDashboard').classList.remove('hidden'); 
+            document.getElementById('btnLogout').classList.remove('hidden'); 
+            document.getElementById('btnLogout').classList.add('flex'); 
+            loadGuestRecipes(); 
+            fetchCocktailTrivia(); 
+            clearInterval(triviaInterval);
+            triviaInterval = setInterval(fetchCocktailTrivia, 25000); 
+        }
+        
+        function showAdminDashboard() { 
+            currentRole = 'admin'; 
+            clearInterval(triviaInterval); 
+            document.getElementById('roleSelectionScreen').classList.add('hidden'); 
+            document.getElementById('loginPanel').classList.add('hidden'); 
+            document.getElementById('guestDashboard').classList.add('hidden'); 
+            document.getElementById('adminDashboard').classList.remove('hidden'); 
+            document.getElementById('btnLogout').classList.remove('hidden'); 
+            document.getElementById('btnLogout').classList.add('flex'); 
+            loadAdminRecipes(); 
+            loadAdminUsers(); 
+        }
+
+        // FITUR BARU: MUAT DATABASE GUEST & PEMBAYARAN DI ADMIN (Dengan Pelacak Error)
+        async function loadAdminUsers() {
+            try {
+                const res = await fetch(`${API_URL}/admin/users`, { headers: { 'Authorization': `Bearer ${userToken}` } });
+                const data = await res.json();
+                const tbody = document.getElementById('adminUsersTableBody');
+                tbody.innerHTML = '';
+                
+                // Jika server mengirimkan pesan Error, tampilkan dengan warna merah
+                if (data.error) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-rose-500 font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i> ERROR DATABASE: ${data.error}</td></tr>`;
+                    return;
+                }
+                
+                if (data.users && data.users.length > 0) {
+                    data.users.forEach(u => {
+                        const amount = parseInt(u.total_paid);
+                        let paymentBadge = `<span class="bg-slate-800 text-slate-400 px-3 py-1.5 rounded-lg text-[10px] font-bold">Rp 0</span>`;
+                        if (amount > 0) {
+                            paymentBadge = `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-check-circle mr-1"></i>Rp ${amount.toLocaleString('id-ID')} (QRIS)</span>`;
+                        }
+                        
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-800/30 transition-colors">
+                                <td class="px-4 py-4 font-medium text-white">${u.full_name || 'No Name'}</td>
+                                <td class="px-4 py-4 text-amber-500">@${u.username || 'user'}</td>
+                                <td class="px-4 py-4">${u.email}</td>
+                                <td class="px-4 py-4">${paymentBadge}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500">Belum ada guest yang mendaftar.</td></tr>`;
+                }
+            } catch (err) {
+                document.getElementById('adminUsersTableBody').innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-rose-500 font-bold"><i class="fa-solid fa-plug-circle-xmark mr-2"></i> Server API belum di-restart / Route tidak ditemukan.</td></tr>`;
+            }
+        }
+
+        async function processRegister() {
+            const fullName = document.getElementById('regFullName').value, email = document.getElementById('regEmail').value, username = document.getElementById('regUsername').value, password = document.getElementById('regPassword').value, msg = document.getElementById('authMsg');
+            if(!fullName || !email || !username || !password) { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = "Mohon lengkapi data."; return; }
+            try {
+                const res = await fetch(`${API_URL}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, full_name: fullName, username }) });
+                const data = await res.json();
+                if(res.status === 201) { msg.className = "mt-4 text-center text-emerald-400 text-xs bg-emerald-500/10 p-3 rounded-xl block"; msg.textContent = "Registrasi Berhasil! Silakan LOGIN."; setTimeout(() => switchAuthTab('login'), 2000); } 
+                else { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = data.error || "Gagal Registrasi."; }
+            } catch (err) { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = "Network Error."; }
+        }
+
+        async function processLogin() {
+            const email = document.getElementById('loginEmail').value, password = document.getElementById('loginPassword').value, msg = document.getElementById('authMsg');
+            if(!email || !password) { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = "Masukkan data."; return; }
+            try {
+                const res = await fetch(`${API_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+                const data = await res.json();
+                if (data.token) { userToken = data.token; currentRole = intendedRole || 'guest'; localStorage.setItem('cocktail_token', userToken); localStorage.setItem('cocktail_role', currentRole); currentRole === 'guest' ? showGuestDashboard() : showAdminDashboard(); } 
+                else { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = data.error || "Data salah."; }
+            } catch (err) { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = "Network Error."; }
+        }
+        function logout() { localStorage.removeItem('cocktail_token'); localStorage.removeItem('cocktail_role'); location.reload(); }
+
+        function downloadExcelWithImages() {
+            if (!currentDisplayedRecipes.length) return alert("Data kosong!");
+            if (currentRole === 'guest') { const m = document.getElementById('paymentModal'); m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('paymentModalContent').classList.remove('scale-95'); }, 10); } 
+            else { generateAndDownloadExcel(); }
+        }
+        function closePaymentModal() { const m = document.getElementById('paymentModal'); m.classList.add('opacity-0'); document.getElementById('paymentModalContent').classList.add('scale-95'); setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
+        
+        async function processPayment() { 
+            closePaymentModal(); 
+            showLoading(true); 
+            try {
+                await fetch(`${API_URL}/payments/pay`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userToken}` },
+                    body: JSON.stringify({ amount: 49000, method: 'QRIS' })
+                });
+                setTimeout(() => { showLoading(false); alert("Payment Successful via QRIS! Downloading Premium Data..."); generateAndDownloadExcel(); }, 1500); 
+            } catch (err) { showLoading(false); alert("Payment Error: " + err.message); }
+        }
+
+        function generateAndDownloadExcel() {
+            const br = '<br style="mso-data-placement:same-cell;" />';
+            let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>table { border-collapse: collapse; font-family: Arial; } th { background-color: #FCE66D; font-weight: bold; text-align: left; padding: 15px; border: 1px solid #CBD5E1; } td { padding: 12px; border: 1px solid #CBD5E1; vertical-align: top; }</style></head><body><table border="1"><thead><tr><th width="200">NAME</th><th width="120">IMAGE</th><th width="200">ASSETS</th><th width="350">INGREDIENTS</th><th width="500">INSTRUCTIONS</th></tr></thead><tbody>`;
+            currentDisplayedRecipes.forEach(r => {
+                const img = r.image || `https://image.pollinations.ai/prompt/A%20glass%20of%20${encodeURIComponent(r.name)}?width=120&height=120&nologo=true`;
+                const ings = (r.all_ingredients || r.ingredients || []).map(i => `- ${i.name} (${i.amount||''} ${i.unit||''})`).join(br);
+                const insts = (r.instructions || []).map((s, idx) => `${idx+1}. ${s}`).join(br+br);
+                tableHtml += `<tr><td><b>${r.name}</b></td><td height="120" style="height:120px; text-align:center;"><img src="${img}" width="100" height="100" /><br><a href="${img}">Link</a></td><td>Kategori: ${r.category||'Bar'}${br}Gelas: ${r.glassware||'Standard'}</td><td>${ings}</td><td>${insts}</td></tr>`;
+            });
+            tableHtml += `</tbody></table></body></html>`;
+            const blob = new Blob(['\uFEFF' + tableHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+            const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `Menu_${new Date().getTime()}.xls`; a.click();
+        }
+
+        function openAddModal() { 
+            editingRecipeId = null; 
+            document.getElementById('addName').value = '';
+            document.getElementById('addCategory').value = '';
+            document.getElementById('addGlass').value = '';
+            document.getElementById('addIngredients').value = '';
+            document.getElementById('addInstructions').value = '';
+            document.getElementById('addRecipeModalTitle').innerHTML = `<i class="fa-solid fa-plus text-amber-500 mr-2"></i> Add New Cocktail`;
+            document.getElementById('btnSubmitRecipe').innerText = 'Save Cocktail';
+            const m = document.getElementById('addRecipeModal'); m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('addRecipeModalContent').classList.remove('scale-95'); }, 10); 
+        }
+        
+        function openEditMode(idx) {
+            const recipe = currentDisplayedRecipes[idx];
+            if(!recipe) return;
+            closeRecipeModal(); 
+            editingRecipeId = recipe.id; 
+            document.getElementById('addName').value = recipe.name;
+            document.getElementById('addCategory').value = recipe.category || '';
+            document.getElementById('addGlass').value = recipe.glassware || '';
+            const ings = recipe.all_ingredients || recipe.ingredients || [];
+            document.getElementById('addIngredients').value = ings.map(i => { const amt = (i.amount || '') + ' ' + (i.unit || ''); return amt.trim() ? `${amt.trim()} ${i.name}` : i.name; }).join('\n');
+            const insts = recipe.instructions || [];
+            document.getElementById('addInstructions').value = insts.join('\n');
+            document.getElementById('addRecipeModalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500 mr-2"></i> Edit Cocktail`;
+            document.getElementById('btnSubmitRecipe').innerText = 'Update Cocktail';
+            const m = document.getElementById('addRecipeModal'); m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('addRecipeModalContent').classList.remove('scale-95'); }, 10);
+        }
+
+        function closeAddModal() { const m = document.getElementById('addRecipeModal'); m.classList.add('opacity-0'); document.getElementById('addRecipeModalContent').classList.add('scale-95'); setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
+        
+        async function submitManualRecipe() {
+            const name = document.getElementById('addName').value.trim(), category = document.getElementById('addCategory').value.trim(), glass = document.getElementById('addGlass').value.trim(), ingRaw = document.getElementById('addIngredients').value.trim(), instRaw = document.getElementById('addInstructions').value.trim();
+            if(!name || !ingRaw || !instRaw) return alert("Name, Ingredients, and Instructions are required!");
+            const ingredients = ingRaw.split('\n').filter(i => i.trim()).map(i => ({ name: i.trim(), amount: null, unit: "" }));
+            const instructions = instRaw.split('\n').filter(i => i.trim()).map(i => i.trim());
+            const recipe = { recipe_name: name, category: category || "Custom", glassware: glass || "Standard", ingredients, instructions, is_complete: true };
+            showLoading(true);
+            try {
+                const url = editingRecipeId ? `${API_URL}/recipes/edit/${editingRecipeId}` : `${API_URL}/recipes/add-manual`;
+                const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userToken}` }, body: JSON.stringify({ recipe }) });
+                const data = await res.json();
+                if(data.success) { alert(editingRecipeId ? "Cocktail updated!" : "Cocktail added!"); closeAddModal(); loadAdminRecipes(); } 
+                else alert(data.error);
+            } catch(err) { alert("Failed to save."); } finally { showLoading(false); }
+        }
+
+        async function processExcelImport() {
+            const fileInput = document.getElementById('adminExcelUpload');
+            const file = fileInput.files[0];
+            if (!file) return alert("Pilih file Excel terlebih dahulu!");
+            showLoading(true);
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(firstSheet);
+                    let successCount = 0;
+                    for (const row of rows) {
+                        const name = row['Name'] || row['Nama'] || row['Recipe Name'];
+                        const category = row['Category'] || row['Kategori'] || 'Custom Import';
+                        const glass = row['Glass'] || row['Glassware'] || row['Gelas'] || 'Standard';
+                        const ingRaw = row['Ingredients'] || row['Bahan'] || row['Ingredient'] || '';
+                        const instRaw = row['Instructions'] || row['Instruksi'] || row['Cara Membuat'] || '';
+                        if(!name) continue; 
+                        const ingredients = ingRaw.split(',').filter(i => i.trim()).map(i => ({ name: i.trim(), amount: null, unit: "" }));
+                        const instructions = instRaw.split('.').filter(i => i.trim()).map(i => i.trim());
+                        const recipe = { recipe_name: name, category: category, glassware: glass, ingredients: ingredients, instructions: instructions, is_complete: true };
+                        await fetch(`${API_URL}/recipes/add-manual`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userToken}` }, body: JSON.stringify({ recipe }) });
+                        successCount++;
+                    }
+                    alert(`${successCount} Resep dari Excel berhasil ditambahkan ke Vault!`);
+                    fileInput.value = '';
+                    loadAdminRecipes(); 
+                } catch (err) { alert("Gagal membaca Excel."); } finally { showLoading(false); }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function loadGuestRecipes() { showLoading(true); document.getElementById('guestGridTitleText').innerText = 'Our Signature Collection'; try { const res = await fetch(`${API_URL}/public/recipes`); const data = await res.json(); renderGrid(data.recipes || [], 'guestRecipesContainer', false, false); } catch (err) {} finally { showLoading(false); } }
+        async function getGuestRecommendations() { const input = document.getElementById('guestIngredientInput').value; if (!input) return; showLoading(true); document.getElementById('guestGridTitleText').innerText = `Results for: "${input}"`; try { const res = await fetch(`${API_URL}/public/recommend`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ ingredients: input.split(',') }) }); const data = await res.json(); renderGrid(data.recommendations || [], 'guestRecipesContainer', true, false); } catch (err) {} finally { showLoading(false); } }
+        async function searchGuestGlobal() { const query = document.getElementById('guestGlobalInput').value; if (!query) return; showLoading(true); document.getElementById('guestGridTitleText').innerText = `Global Results: "${query}"`; try { const res = await fetch(`${API_URL}/public/global-search?q=${query}`); const data = await res.json(); renderGrid(data.recipes || [], 'guestRecipesContainer', false, true); } catch (err) {} finally { showLoading(false); } }
+
+        async function loadAdminRecipes() { showLoading(true); document.getElementById('adminGridTitleText').innerText = 'My Local Vault'; try { const res = await fetch(`${API_URL}/recipes`, { headers: { 'Authorization': `Bearer ${userToken}` } }); if (res.status === 401 || res.status === 403) return logout(); const data = await res.json(); document.getElementById('adminRecipeCounter').innerText = `Total: ${data.recipes.length}`; renderGrid(data.recipes || [], 'adminRecipesContainer', false, false); } catch (err) {} finally { showLoading(false); } }
+        async function getAdminRecommendations() { const input = document.getElementById('adminIngredientInput').value; if (!input) return; showLoading(true); document.getElementById('adminGridTitleText').innerText = `AI Match: "${input}"`; try { const res = await fetch(`${API_URL}/recipes/recommend`, { method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${userToken}` }, body: JSON.stringify({ ingredients: input.split(',') }) }); const data = await res.json(); renderGrid(data.recommendations || [], 'adminRecipesContainer', true, false); } catch (err) {} finally { showLoading(false); } }
+        async function searchAdminGlobal() { const query = document.getElementById('adminGlobalInput').value; if (!query) return; showLoading(true); document.getElementById('adminGridTitleText').innerText = `Global Search: "${query}"`; try { const res = await fetch(`${API_URL}/recipes/global-search?q=${query}`, { headers: { 'Authorization': `Bearer ${userToken}` } }); const data = await res.json(); currentGlobalRecipes = data.recipes || []; renderGrid(currentGlobalRecipes, 'adminRecipesContainer', false, true); } catch (err) {} finally { showLoading(false); } }
+        async function saveGlobalRecipe(recipeId) { const recipe = currentGlobalRecipes.find(r => r.id === recipeId); if (!recipe || !confirm(`Save "${recipe.name}"?`)) return; showLoading(true); try { const res = await fetch(`${API_URL}/recipes/save-global`, { method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${userToken}` }, body: JSON.stringify({ recipe }) }); const data = await res.json(); if(data.success) { alert("Saved!"); loadAdminRecipes(); } } catch (err) {} finally { showLoading(false); } }
+        async function uploadAdminPDF() { const file = document.getElementById('adminPdfUpload').files[0]; if (!file) return; const fd = new FormData(); fd.append('pdf', file); showLoading(true); try { await fetch(`${API_URL}/recipes/import-pdf`, { method: 'POST', headers: { 'Authorization': `Bearer ${userToken}` }, body: fd }); alert("Extracted!"); loadAdminRecipes(); } catch (err) {} finally { showLoading(false); document.getElementById('adminPdfUpload').value=''; } }
+
+        function renderGrid(list, containerId, isRec = false, isGlobal = false) {
+            currentDisplayedRecipes = list; const container = document.getElementById(containerId); container.innerHTML = '';
+            if (!list.length) return container.innerHTML = `<div class="col-span-full py-10 text-center text-slate-500">No results found.</div>`;
+            list.forEach((recipe, idx) => {
+                recipe._isGlobalSearch = isGlobal; 
+                let badge = '';
+                if (isGlobal && currentRole === 'admin') badge = `<button onclick="event.stopPropagation(); saveGlobalRecipe('${recipe.id}')" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg z-20 relative pointer-events-auto">Save</button>`;
+                else if (isRec && recipe.match_percentage) badge = `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-full text-[9px] font-extrabold flex items-center gap-1 z-20 relative"><i class="fa-solid fa-star"></i> ${recipe.match_percentage}%</span>`;
+                const aiImg = `https://image.pollinations.ai/prompt/A%20glass%20of%20${encodeURIComponent(recipe.name)}%20cocktail,%20dark%20bar?width=300&height=300&nologo=true`;
+                const fallImg = "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=300&q=80";
+                const ings = (isRec && recipe.all_ingredients ? recipe.all_ingredients : recipe.ingredients) || [];
+                const ingHTML = ings.map(i => `<li class="text-[10px] sm:text-xs text-slate-200 py-1 flex justify-between"><span class="truncate pr-2"><i class="fa-solid fa-circle text-[4px] text-amber-500/60 mr-2"></i>${i.name}</span><span class="text-slate-400 font-mono text-[9px] bg-black/40 px-1.5 rounded">${i.amount||''} ${i.unit||''}</span></li>`).join('');
+                container.innerHTML += `<div onclick="openRecipeModal(${idx})" class="cursor-pointer animate-fade-in-up bg-slate-900/70 backdrop-blur-xl border border-white/10 hover:border-amber-500/40 hover:-translate-y-1 hover:shadow-2xl rounded-2xl flex flex-col transition-all group overflow-hidden"><div class="h-36 relative bg-black"><img src="${recipe.image || aiImg}" onerror="this.onerror=null;this.src='${fallImg}';" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 pointer-events-none"><div class="absolute inset-0 bg-gradient-to-t from-slate-900/95 to-transparent"></div><div class="absolute top-2 right-2 z-10">${badge}</div><div class="absolute bottom-2 left-3 right-3 z-10"><h4 class="text-sm font-extrabold text-white truncate drop-shadow-lg">${recipe.name}</h4></div></div><div class="p-3 flex flex-col flex-grow"><div class="flex gap-2 mb-2 text-[9px] text-slate-300"><span class="bg-white/5 px-2 py-1 rounded truncate shadow-sm">${recipe.category||'Cocktail'}</span></div><div class="bg-black/30 p-2 rounded-xl border border-white/5 relative flex-grow"><ul class="max-h-16 overflow-hidden relative space-y-0.5">${ingHTML}<div class="absolute bottom-0 w-full h-6 bg-gradient-to-t from-slate-900 to-transparent"></div></ul></div></div></div>`;
+            });
+        }
+
+        function openRecipeModal(idx) {
+            const recipe = currentDisplayedRecipes[idx]; if (!recipe) return;
+            document.getElementById('modalTitle').textContent = recipe.name; 
+            document.getElementById('modalImage').src = recipe.image || `https://image.pollinations.ai/prompt/A%20glass%20of%20${encodeURIComponent(recipe.name)}%20cocktail?width=800&height=600&nologo=true`; 
+            document.getElementById('modalImage').onerror = function(){this.src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800";}; 
+            
+            let badgesHtml = `<span class="bg-black/40 border border-white/20 px-3 py-1.5 rounded-lg shadow-sm">${recipe.category||'Cocktail'}</span>`;
+            if(currentRole === 'admin' && recipe.id && !recipe._isGlobalSearch) {
+                badgesHtml += `<button onclick="openEditMode(${idx})" class="bg-amber-500/20 text-amber-400 border border-amber-500/50 hover:bg-amber-500 hover:text-slate-950 px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-2 pointer-events-auto shadow-lg"><i class="fa-solid fa-pen-to-square"></i> Edit Recipe</button>`;
+            }
+            document.getElementById('modalBadges').innerHTML = badgesHtml;
+
+            const ings = (recipe.all_ingredients || recipe.ingredients || []); 
+            document.getElementById('modalIngredients').innerHTML = ings.map(i => `<li class="flex justify-between border-b border-white/5 py-2"><span class="text-slate-200 text-sm"><i class="fa-solid fa-circle text-[5px] text-amber-500/80 mr-3"></i>${i.name}</span><span class="text-amber-400 font-mono text-xs bg-black/40 px-2 py-1 rounded">${i.amount||''} ${i.unit||''}</span></li>`).join('');
+            
+            const inst = recipe.instructions || []; 
+            document.getElementById('modalInstructions').innerHTML = inst.map((s, i) => `<div class="flex gap-4 p-3 hover:bg-white/5 rounded-xl"><span class="text-amber-500 font-bold bg-amber-500/10 w-7 h-7 flex items-center justify-center rounded-lg border border-amber-500/20 shrink-0">${i+1}</span><p class="text-slate-300 text-sm">${s}</p></div>`).join('');
+            
+            const m = document.getElementById('recipeModal'); m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('recipeModalContent').classList.remove('scale-95'); }, 10);
+        }
+        function closeRecipeModal() { const m = document.getElementById('recipeModal'); m.classList.add('opacity-0'); document.getElementById('recipeModalContent').classList.add('scale-95'); setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
+    </script>
+</body>
+</html>
