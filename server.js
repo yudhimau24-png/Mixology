@@ -1,7 +1,7 @@
 try {
   require('dotenv').config();
 } catch (error) {
-  // Abaikan dotenv jika berjalan di lingkungan Vercel
+  // Abaikan dotenv di lingkungan serverless Vercel
 }
 
 process.on('uncaughtException', (err) => console.error('[CRASH] Uncaught Exception:', err));
@@ -12,6 +12,7 @@ const cors = require('cors');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 const { GoogleGenAI, Type } = require('@google/genai');
 const { Pool } = require('pg');
 
@@ -22,10 +23,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname)); 
 
-// KONEKSI DATABASE NEON
+// Route fallback untuk menyajikan index.html di Vercel
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// KONEKSI DATABASE NEON POSTGRES
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('neon.tech') ? { rejectUnauthorized: false } : false
+  ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('neon.tech') 
+    ? { rejectUnauthorized: false } 
+    : false
 });
 
 // AUTO-UPDATE DATABASE SCHEMA
@@ -288,10 +296,10 @@ app.get('/api/public/global-search', async (req, res) => {
   } catch (error) { return res.status(500).json({ error: error.message }); }
 });
 
-setInterval(() => {}, 1000 * 60 * 60);
-
-if (process.env.NODE_ENV !== 'production') {
+// HANYA JALANKAN LISTEN JIKA LOKAL (Bukan di Vercel Serverless)
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   app.listen(PORT, () => console.log(`🚀 Cocktail AI Server running on port ${PORT}`));
 }
 
+// WAJIB UNTUK VERCEL
 module.exports = app;
