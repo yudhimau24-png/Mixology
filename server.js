@@ -21,9 +21,9 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); 
+app.use(express.static(__dirname));
 
-// Route fallback untuk menyajikan index.html di Vercel
+// Serve Halaman Utama (Frontend)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -36,23 +36,35 @@ const pool = new Pool({
     : false
 });
 
-// AUTO-UPDATE DATABASE SCHEMA
-if (process.env.DATABASE_URL) {
-  pool.query(`
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(255);
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(255);
-    
-    CREATE TABLE IF NOT EXISTS payments (
-        id SERIAL PRIMARY KEY,
-        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-        amount INTEGER,
-        method VARCHAR(50),
-        status VARCHAR(50),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `).then(() => console.log('✅ Database schema & payments table verified.'))
-    .catch(err => console.error('❌ DB Schema update error:', err.message));
+// AMAN DARI CRASH: Auto-update schema dimasukkan ke middleware non-blocking
+let isSchemaUpdated = false;
+async function initDbSchema() {
+  if (isSchemaUpdated || !process.env.DATABASE_URL) return;
+  try {
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(255);
+      
+      CREATE TABLE IF NOT EXISTS payments (
+          id SERIAL PRIMARY KEY,
+          user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+          amount INTEGER,
+          method VARCHAR(50),
+          status VARCHAR(50),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    isSchemaUpdated = true;
+    console.log('✅ Database schema & payments table verified.');
+  } catch (err) {
+    console.error('❌ DB Schema update error (dilewati agar server tidak crash):', err.message);
+  }
 }
+
+app.use(async (req, res, next) => {
+  await initDbSchema();
+  next();
+});
 
 const upload = multer({ storage: multer.memoryStorage() });
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
@@ -296,10 +308,10 @@ app.get('/api/public/global-search', async (req, res) => {
   } catch (error) { return res.status(500).json({ error: error.message }); }
 });
 
-// HANYA JALANKAN LISTEN JIKA LOKAL (Bukan di Vercel Serverless)
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+// LISTEN HANYA JIKA DIBUKA DI LAPTOP (Bukan di Cloud Vercel)
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => console.log(`🚀 Cocktail AI Server running on port ${PORT}`));
 }
 
-// WAJIB UNTUK VERCEL
+// EXPORT WAJIB UNTUK VERCEL SERVERLESS
 module.exports = app;
