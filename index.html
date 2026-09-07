@@ -30,15 +30,38 @@
         .animation-delay-4000 { animation-delay: 4s; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
-        @keyframes scrollText { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        .animate-marquee { display: inline-block; white-space: nowrap; animation: scrollText 30s linear infinite; }
+        
+        @keyframes scrollText { 
+            0% { transform: translateX(0); } 
+            100% { transform: translateX(-100%); } 
+        }
+        .animate-marquee { 
+            display: inline-block; 
+            padding-left: 100%; 
+            white-space: nowrap; 
+            animation: scrollText 45s linear infinite; 
+        }
         .marquee-container { overflow: hidden; position: relative; width: 100%; }
         .animate-spin-slow { animation: spin 15s linear infinite; }
+        
+        @keyframes spinRecord { 100% { transform: rotate(360deg); } }
+        .spin-record { animation: spinRecord 3s linear infinite; }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen selection:bg-amber-500 selection:text-slate-950 relative overflow-x-hidden bg-black flex flex-col justify-between">
 
-    <!-- Latar Belakang -->
+    <audio id="barMusic" loop preload="none">
+        <source src="https://listen.181fm.com/181-realcountry_128k.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <button onclick="toggleMusic()" id="musicToggleBtn" class="fixed bottom-6 right-6 z-50 bg-slate-900/80 backdrop-blur-xl border border-amber-500/30 text-amber-400 w-14 h-14 rounded-full shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:scale-110 hover:bg-amber-500 hover:text-slate-950 transition-all duration-300 group flex items-center justify-center">
+        <i id="musicIcon" class="fa-solid fa-volume-xmark text-xl transition-all"></i>
+        <span class="absolute -top-12 right-0 bg-slate-950/90 text-amber-400 text-[10px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-amber-500/30 font-bold backdrop-blur-md">
+            Toggle Western Radio
+        </span>
+    </button>
+
     <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <video autoplay loop muted playsinline class="w-full h-full object-cover opacity-60">
             <source src="https://assets.mixkit.co/videos/preview/mixkit-bartender-making-a-cocktail-with-a-shaker-43759-large.mp4" type="video/mp4">
@@ -51,7 +74,6 @@
         <div class="absolute -bottom-32 left-1/3 w-96 h-96 bg-emerald-500/15 rounded-full filter blur-[100px] animate-blob animation-delay-4000"></div>
     </div>
 
-    <!-- NAVBAR UMUM -->
     <header class="sticky top-0 z-40 bg-slate-950/60 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
         <div class="w-full max-w-[95%] mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-3 group cursor-pointer" onclick="location.reload()">
@@ -71,7 +93,6 @@
 
     <main class="w-full max-w-[95%] mx-auto px-4 md:px-6 py-8 relative z-30 flex-grow">
 
-        <!-- SCREEN 1: PILIH PERAN -->
         <div id="roleSelectionScreen" class="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in-up">
             <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-lg text-center">Choose Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">Experience</span></h2>
             <p class="text-slate-300 text-sm md:text-lg mb-12 text-center max-w-2xl">Are you here to explore our curated digital menu, or are you the mixologist behind the bar?</p>
@@ -96,7 +117,6 @@
             </div>
         </div>
 
-        <!-- SCREEN 2: LOGIN / REGISTER PANEL -->
         <div id="loginPanel" class="hidden max-w-md mx-auto my-12 bg-slate-900/80 backdrop-blur-2xl border border-white/10 p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden animate-fade-in-up">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl"></div>
             <div class="text-center mb-6 relative z-10">
@@ -107,7 +127,6 @@
                 <p id="loginSubtitle" class="text-slate-300 text-[11px] mt-1">Please log in or sign up to continue.</p>
             </div>
 
-            <!-- TAB SWITCHER (Dibungkus agar bisa disembunyikan) -->
             <div id="authTabsContainer" class="flex border-b border-white/10 mb-6 relative z-10">
                 <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="w-1/2 py-3 text-amber-400 text-sm border-b-2 border-amber-500 font-bold transition-all">LOGIN</button>
                 <button id="tabSignupBtn" onclick="switchAuthTab('signup')" class="w-1/2 py-3 text-slate-400 text-sm font-bold hover:text-white transition-all">SIGNUP</button>
@@ -131,7 +150,7 @@
 
                 <div id="formSignup" class="hidden space-y-4">
                     <div>
-                        <label class="block text-[11px] font-semibold text-slate-300 mb-1 ml-1">Nama Lengkap:</label>
+                        <label class="block text-[11px] font-semibold text-slate-300 mb-1 ml-1">Full Name:</label>
                         <input type="text" id="regFullName" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2.5 px-4 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all" style="pointer-events: auto;">
                     </div>
                     <div>
@@ -139,17 +158,17 @@
                         <input type="email" id="regEmail" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2.5 px-4 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all" style="pointer-events: auto;">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-semibold text-slate-300 mb-1 ml-1">Buat Username:</label>
+                        <label class="block text-[11px] font-semibold text-slate-300 mb-1 ml-1">Create Username:</label>
                         <input type="text" id="regUsername" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2.5 px-4 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all" style="pointer-events: auto;">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-semibold text-slate-300 mb-1 ml-1">Buat Password:</label>
+                        <label class="block text-[11px] font-semibold text-slate-300 mb-1 ml-1">Create Password:</label>
                         <div class="relative">
                             <input type="password" id="regPassword" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2.5 pl-4 pr-10 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all" style="pointer-events: auto;">
                             <i class="fa-solid fa-eye absolute right-4 top-3.5 text-slate-500 cursor-pointer hover:text-white transition-colors" onclick="togglePassword('regPassword')"></i>
                         </div>
                     </div>
-                    <button onclick="processRegister()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3.5 rounded-xl text-sm mt-2 shadow-lg active:scale-95 transition-all">REGISTRASI AKUN</button>
+                    <button onclick="processRegister()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3.5 rounded-xl text-sm mt-2 shadow-lg active:scale-95 transition-all">REGISTER ACCOUNT</button>
                 </div>
 
                 <p id="authMsg" class="mt-4 text-center text-rose-400 text-xs hidden p-3 rounded-xl backdrop-blur-sm"></p>
@@ -158,7 +177,7 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- SCREEN 3A: GUEST MENU (PELANGGAN)          -->
+        <!-- SCREEN 3A: GUEST MENU (CUSTOMERS)          -->
         <!-- ========================================== -->
         <div id="guestDashboard" class="hidden space-y-8 animate-fade-in-up">
             <div class="flex flex-col md:flex-row items-center md:items-start gap-6 mb-4 p-6 lg:p-8 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl relative overflow-hidden">
@@ -172,7 +191,6 @@
                 </div>
             </div>
 
-            <!-- FITUR LIVE FEED & HISTORY TEXT -->
             <div id="triviaWidget" class="mb-8 bg-slate-900/50 backdrop-blur-2xl border border-amber-500/30 rounded-2xl p-4 md:p-5 flex flex-col md:flex-row items-center gap-5 md:gap-6 shadow-[0_0_25px_rgba(245,158,11,0.15)] relative overflow-hidden group max-w-5xl mx-auto transition-opacity duration-700">
                 <div class="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-transparent to-transparent pointer-events-none"></div>
                 
@@ -190,8 +208,44 @@
                     </div>
                     <h3 id="triviaTitle" class="text-xl md:text-2xl font-extrabold text-white drop-shadow-md mb-2 truncate">Discovering History...</h3>
                     <div class="marquee-container bg-black/40 rounded-xl py-2.5 px-3 border border-white/10 shadow-inner">
-                        <p id="triviaMarquee" class="text-[11px] md:text-xs text-amber-100/90 font-medium tracking-wide animate-marquee">Menghubungkan ke database sejarah cocktail di seluruh dunia...</p>
+                        <p id="triviaMarquee" class="text-[11px] md:text-xs text-amber-100/90 font-medium tracking-wide animate-marquee">Connecting to the global cocktail history database...</p>
                     </div>
+                </div>
+            </div>
+
+            <!-- GLOBAL BEVERAGE & BAR NEWS SECTION -->
+            <div id="beverageNewsSection" class="mb-12 max-w-5xl mx-auto">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-l-4 border-amber-500 pl-3">
+                    <div>
+                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-newspaper text-amber-500"></i> Global Bar & Beverage News
+                        </h3>
+                        <p class="text-xs text-slate-400">Real-time industry trends, World's 50 Best Bars highlights, & modern mixology news.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 text-[10px] font-bold bg-slate-900/80 p-1.5 rounded-xl border border-white/10 backdrop-blur-md">
+                        <button onclick="filterNews('all')" id="tabNewsAll" class="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 transition-all">All Trends</button>
+                        <button onclick="filterNews('bars')" id="tabNewsBars" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">World's 50 Best</button>
+                        <button onclick="filterNews('tech')" id="tabNewsTech" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Mixology Tech</button>
+                        <button onclick="filterNews('eco')" id="tabNewsEco" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Sustainability</button>
+                    </div>
+                </div>
+                <div id="newsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <!-- Dynamic News Cards Injected via JS -->
+                </div>
+            </div>
+
+            <!-- MIXOLOGY FUNDAMENTALS SECTION -->
+            <div id="fundamentalsSection" class="mb-12 max-w-5xl mx-auto">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-l-4 border-blue-500 pl-3">
+                    <div>
+                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-book-open-reader text-blue-500"></i> Mixology 101: The Fundamentals
+                        </h3>
+                        <p class="text-xs text-slate-400">Master the core elements of cocktail crafting: Spirit, Syrup, Acidity, and Bitters.</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="fundamentalsGrid">
+                    <!-- Dynamic Fundamentals Cards Injected via JS -->
                 </div>
             </div>
 
@@ -246,7 +300,6 @@
                 </div>
             </div>
 
-            <!-- ADMIN TOOLS -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-20">
                 <div class="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-5 lg:p-6 rounded-2xl shadow-xl hover:shadow-[0_0_30px_rgba(245,158,11,0.15)] hover:border-amber-500/40 transition-all duration-300 flex flex-col group transform hover:-translate-y-1.5">
                     <div class="flex items-center gap-3 mb-3">
@@ -297,12 +350,11 @@
                     </div>
                     <div class="flex gap-2 mt-auto">
                         <button onclick="processExcelImport()" class="w-full bg-slate-800 hover:bg-gradient-to-r hover:from-purple-500 hover:to-fuchsia-500 hover:text-white text-white font-bold py-2.5 rounded-xl text-xs transition-all border border-white/5 hover:border-transparent active:scale-95 shadow-lg flex items-center justify-center gap-1"><i class="fa-solid fa-upload"></i> Upload</button>
-                        <button onclick="openAddModal()" class="w-12 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all border border-white/5 active:scale-95 shadow-lg flex items-center justify-center flex-shrink-0" title="Input Manual"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="openAddModal()" class="w-12 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all border border-white/5 active:scale-95 shadow-lg flex items-center justify-center flex-shrink-0" title="Manual Input"><i class="fa-solid fa-pen"></i></button>
                     </div>
                 </div>
             </div>
 
-            <!-- TABEL DATABASE VAULT -->
             <div class="bg-slate-900/50 backdrop-blur-2xl border border-white/10 p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-white/10 pb-4">
                     <div>
@@ -317,7 +369,6 @@
                 <div id="adminRecipesContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6"></div>
             </div>
 
-            <!-- FITUR BARU: TABEL DATABASE GUEST & PEMBAYARAN -->
             <div class="bg-slate-900/50 backdrop-blur-2xl border border-white/10 p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl mt-8">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-white/10 pb-4">
                     <div>
@@ -331,14 +382,14 @@
                     <table class="w-full text-left text-sm text-slate-300 border-collapse">
                         <thead class="text-xs uppercase bg-slate-950/50 text-slate-400 border-b border-white/10">
                             <tr>
-                                <th scope="col" class="px-4 py-4 font-bold">Nama Lengkap</th>
+                                <th scope="col" class="px-4 py-4 font-bold">Full Name</th>
                                 <th scope="col" class="px-4 py-4 font-bold">Username</th>
                                 <th scope="col" class="px-4 py-4 font-bold">Email</th>
-                                <th scope="col" class="px-4 py-4 font-bold">Total Pembayaran</th>
+                                <th scope="col" class="px-4 py-4 font-bold">Total Payment</th>
                             </tr>
                         </thead>
                         <tbody id="adminUsersTableBody" class="divide-y divide-white/5">
-                            <!-- Data akan dimuat lewat JS -->
+                            <!-- Data populated by JS -->
                         </tbody>
                     </table>
                 </div>
@@ -346,7 +397,6 @@
 
         </div>
 
-        <!-- LOADING INDICATOR -->
         <div id="loadingIndicator" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/60 backdrop-blur-sm">
             <div class="bg-slate-900 border border-white/20 p-8 rounded-3xl text-center shadow-2xl">
                 <div class="inline-block relative w-16 h-16 mb-4">
@@ -359,7 +409,31 @@
 
     </main>
 
-    <!-- PAYMENT MODAL UNTUK GUEST -->
+    <div id="newsModal" class="fixed inset-0 z-[170] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer" onclick="closeNewsModal()"></div>
+        <div id="newsModalContent" class="relative bg-slate-900 border border-white/10 rounded-3xl w-full max-w-2xl p-6 md:p-8 shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden text-left">
+            <button onclick="closeNewsModal()" class="absolute top-4 right-4 text-white/70 hover:text-white bg-black/40 p-2 rounded-full z-20 backdrop-blur-md">
+                <i class="fa-solid fa-xmark w-5 h-5 flex items-center justify-center"></i>
+            </button>
+            <div id="newsModalBody">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FUNDAMENTALS READER (UPDATED SIZE) -->
+    <div id="fundamentalsModal" class="fixed inset-0 z-[175] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer" onclick="closeFundamentalsModal()"></div>
+        <div id="fundamentalsModalContent" class="relative bg-slate-900 border border-white/10 rounded-3xl w-full max-w-lg p-5 md:p-6 shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden text-left">
+            <button onclick="closeFundamentalsModal()" class="absolute top-3 right-3 text-white/70 hover:text-white bg-black/40 p-2 rounded-full z-20 backdrop-blur-md">
+                <i class="fa-solid fa-xmark w-4 h-4 flex items-center justify-center"></i>
+            </button>
+            <div id="fundamentalsModalBody">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+
     <div id="paymentModal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer" onclick="closePaymentModal()"></div>
         <div id="paymentModalContent" class="relative bg-slate-900 border border-white/10 rounded-3xl w-full max-w-sm p-8 shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden text-center">
@@ -374,18 +448,16 @@
                 <span class="text-3xl font-extrabold text-amber-400">Rp 49.000</span>
             </div>
             <div class="space-y-3 relative z-10">
-                <!-- Tombol Pay ini sekarang akan hit database -->
                 <button onclick="processPayment()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3.5 rounded-xl text-sm shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">
                     <i class="fa-solid fa-qrcode"></i> Pay with QRIS / E-Wallet
                 </button>
                 <button onclick="closePaymentModal()" class="w-full bg-slate-800/70 hover:bg-slate-700/80 text-slate-300 font-bold py-3.5 rounded-xl text-sm border border-white/5 active:scale-95 transition-all">
-                    Maybe Later
+                    <i class="fa-solid fa-times"></i> Maybe Later
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL FORM UNTUK ADD / EDIT RECIPE -->
     <div id="addRecipeModal" class="fixed inset-0 z-[160] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer" onclick="closeAddModal()"></div>
         <div id="addRecipeModalContent" class="relative bg-slate-900 border border-white/10 rounded-3xl w-full max-w-2xl p-6 md:p-8 shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden">
@@ -405,6 +477,18 @@
                     <label class="block text-[11px] text-slate-400 mb-1">Glassware</label>
                     <input type="text" id="addGlass" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-amber-500/50" style="pointer-events: auto;">
                 </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Tasting Notes</label>
+                        <textarea id="addTastingNotes" rows="2" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2 px-3 text-sm text-white custom-scroll focus:outline-none focus:border-amber-500/50" placeholder="e.g. Spirit-forward, dry..." style="pointer-events: auto;"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Recommendations (Gender/Profile)</label>
+                        <textarea id="addRecommendations" rows="2" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2 px-3 text-sm text-white custom-scroll focus:outline-none focus:border-amber-500/50" placeholder="e.g. Suitable for masculine profile..." style="pointer-events: auto;"></textarea>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block text-[11px] text-slate-400 mb-1">Ingredients (Type 1 per line) *</label>
                     <textarea id="addIngredients" rows="3" class="w-full bg-slate-950/70 border border-white/10 rounded-xl py-2 px-3 text-sm text-white custom-scroll focus:outline-none focus:border-amber-500/50" placeholder="50ml Whiskey&#10;20ml Lemon Juice" style="pointer-events: auto;"></textarea>
@@ -421,7 +505,6 @@
         </div>
     </div>
 
-    <!-- MODAL DETAILS RECIPE -->
     <div id="recipeModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-2 sm:p-4 md:p-6 opacity-0 transition-opacity duration-300">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer" onclick="closeRecipeModal()"></div>
         <div class="relative bg-slate-900 border border-white/10 rounded-2xl sm:rounded-3xl w-full max-w-4xl max-h-[85vh] sm:max-h-[90vh] flex flex-col shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden" id="recipeModalContent">
@@ -447,6 +530,18 @@
                         <div id="modalInstructions" class="space-y-3 bg-slate-950/50 p-4 rounded-xl sm:rounded-2xl border border-white/5 shadow-inner"></div>
                     </div>
                 </div>
+
+                <div id="modalExtraNotes" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 hidden">
+                    <div>
+                        <h4 class="text-xs sm:text-sm font-extrabold text-amber-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa-solid fa-wine-glass"></i> Tasting Notes</h4>
+                        <p id="modalTastingNotes" class="text-sm bg-slate-950/50 p-4 rounded-xl sm:rounded-2xl border border-white/5 shadow-inner leading-relaxed text-slate-300"></p>
+                    </div>
+                    <div>
+                        <h4 class="text-xs sm:text-sm font-extrabold text-amber-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa-solid fa-user-check"></i> Recommendations</h4>
+                        <p id="modalRecommendations" class="text-sm bg-slate-950/50 p-4 rounded-xl sm:rounded-2xl border border-white/5 shadow-inner leading-relaxed text-slate-300"></p>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -463,6 +558,37 @@
         window.addEventListener('blur', () => blackoutScreen.style.display = 'flex');
         window.addEventListener('focus', () => blackoutScreen.style.display = 'none');
 
+        let isMusicPlaying = false;
+        function toggleMusic() {
+            const bgMusic = document.getElementById('barMusic');
+            const icon = document.getElementById('musicIcon');
+            const btn = document.getElementById('musicToggleBtn');
+            
+            if (isMusicPlaying) {
+                bgMusic.pause();
+                icon.className = "fa-solid fa-volume-xmark text-xl transition-all";
+                icon.classList.remove('spin-record', 'text-slate-950');
+                btn.classList.remove('bg-amber-500', 'animate-pulse');
+                isMusicPlaying = false;
+            } else {
+                icon.className = "fa-solid fa-spinner animate-spin text-xl transition-all text-slate-950";
+                btn.classList.add('bg-amber-500');
+                
+                bgMusic.volume = 0.4;
+                bgMusic.play().then(() => {
+                    icon.className = "fa-solid fa-radio text-2xl transition-all spin-record text-slate-950";
+                    btn.classList.add('animate-pulse');
+                    isMusicPlaying = true;
+                }).catch(e => {
+                    console.error("Audio stream error:", e);
+                    alert("Gagal memuat stream radio. Pastikan koneksi internet stabil.");
+                    icon.className = "fa-solid fa-volume-xmark text-xl transition-all";
+                    btn.classList.remove('bg-amber-500', 'animate-pulse');
+                    isMusicPlaying = false;
+                });
+            }
+        }
+
         let userToken = localStorage.getItem('cocktail_token');
         let savedRole = localStorage.getItem('cocktail_role');
         let currentRole = null; 
@@ -474,13 +600,215 @@
         let editingRecipeId = null;
         let triviaInterval = null;
 
+        // ==========================================
+        // DYNAMIC DATA VARIABLES (READY FOR API)
+        // ==========================================
+        let fundamentalsData = [];
+        let beverageNewsData = [];
+
+        // Fallback Data for Fundamentals
+        const fallbackFundamentals = [
+            {
+                id: 1, category: 'SPIRIT', icon: 'fa-wine-bottle', title: "Anatomi Base Spirit",
+                image: "https://image.pollinations.ai/prompt/bottles%20of%20liquor%20vodka%20gin%20whiskey%20dark%20bar%20cinematic?width=600&height=300&nologo=true",
+                snippet: "Memahami karakter Gin, Rum, Whiskey, dan Vodka sebagai pondasi utama pembentuk koktail.",
+                fullContent: "<p class='mb-3'><strong>Spirit (Liquor)</strong> adalah tulang punggung dari setiap koktail. Pemilihan base liquor akan menentukan arah profil rasa secara keseluruhan.</p><ul class='list-disc pl-5 space-y-2'><li><strong>Vodka:</strong> Netral, bersih. Berfungsi sebagai kanvas kosong untuk menonjolkan bahan lain.</li><li><strong>Gin:</strong> Botanikal, juniper-forward. Memberikan aroma herbal dan floral yang tajam.</li><li><strong>Rum:</strong> Manis alami dari tebu/molasses. Cocok untuk profil tropis dan fruity.</li><li><strong>Whiskey/Bourbon:</strong> Kaya akan rasa kayu (oak), vanilla, dan karamel. Memberikan kedalaman dan kehangatan (warmth).</li></ul>"
+            },
+            {
+                id: 2, category: 'SYRUP', icon: 'fa-flask', title: "Seni Membuat Syrup",
+                image: "https://image.pollinations.ai/prompt/pouring%20sugar%20syrup%20into%20a%20cocktail%20glass%20dark%20bar?width=600&height=300&nologo=true",
+                snippet: "Lebih dari sekadar gula: Panduan Simple Syrup, Rich Syrup, hingga teknik Oleo Saccharum.",
+                fullContent: "<p class='mb-3'>Syrup tidak hanya memberikan rasa manis, tapi juga tekstur (mouthfeel) pada minuman.</p><ul class='list-disc pl-5 space-y-2'><li><strong>Simple Syrup (1:1):</strong> Rasio gula dan air seimbang. Standar untuk kebanyakan koktail klasik.</li><li><strong>Rich Syrup (2:1):</strong> Rasio 2 bagian gula dan 1 bagian air. Memberikan tekstur yang jauh lebih kental (silky) dan lebih tahan lama disimpan.</li><li><strong>Oleo Saccharum:</strong> Teknik mengekstrak minyak esensial dari kulit jeruk (citrus peels) menggunakan gula pasir. Menghasilkan rasa manis yang sangat aromatik.</li></ul>"
+            },
+            {
+                id: 3, category: 'ACIDITY', icon: 'fa-lemon', title: "Pengendalian Acidity",
+                image: "https://image.pollinations.ai/prompt/sliced%20lemons%20and%20limes%20on%20a%20bar%20counter%20dark%20moody?width=600&height=300&nologo=true",
+                snippet: "Citrus segar vs Acid Solutions: Kapan menggunakan Malic atau Citric acid dalam mixology modern.",
+                fullContent: "<p class='mb-3'>Asam (acidity) adalah elemen penyeimbang mutlak terhadap manis (syrup). Tanpa acidity, koktail akan terasa 'cloying' atau kemanisan.</p><ul class='list-disc pl-5 space-y-2'><li><strong>Citric Acid (Lemon/Lime):</strong> Asam tajam yang langsung menusuk lidah. Sangat baik untuk memberikan kesegaran instan.</li><li><strong>Malic Acid (Apple/Grape):</strong> Asam yang lebih lembut dan tahan lama di lidah, memancing produksi air liur.</li><li><strong>Acid Adjusting:</strong> Teknik modern di mana bartender menambahkan bubuk malic/citric acid ke dalam jus alternatif (seperti jus nanas) agar memiliki tingkat keasaman setara dengan jus lemon murni, sehingga bisa digunakan sebagai substitusi lemon tanpa merusak keseimbangan resep.</li></ul>"
+            },
+            {
+                id: 4, category: 'BITTERS', icon: 'fa-droplet', title: "Fungsi Krusial Bitters",
+                image: "https://image.pollinations.ai/prompt/angostura%20bitters%20bottle%20dashing%20into%20a%20glass%20dark%20bar?width=600&height=300&nologo=true",
+                snippet: "Garamnya dunia koktail: Mengapa Angostura dan Peychaud's sangat krusial dalam meracik minuman.",
+                fullContent: "<p class='mb-3'>Sama seperti garam dalam masakan, bitters (cairan pekat hasil maserasi akar, kulit kayu, dan rempah) berfungsi mengikat semua rasa di dalam gelas.</p><ul class='list-disc pl-5 space-y-2'><li><strong>Angostura Bitters:</strong> Profil rasa kayu manis, cengkeh, dan rempah hangat. Wajib untuk Old Fashioned.</li><li><strong>Peychaud's Bitters:</strong> Lebih floral, manis, dan beraroma adas manis (anise). Komponen utama dalam koktail Sazerac.</li><li><strong>Fungsi Utama:</strong> Hanya dengan 2-3 tetes (dashes), bitters mampu menekan rasa manis berlebih, menjinakkan rasa alkohol yang terlalu tajam, dan memberikan kompleksitas aroma pada koktail sederhana.</li></ul>"
+            }
+        ];
+
+        // Fallback Data for News
+        const fallbackNews = [
+            { id: 1, category: 'bars', title: "World's 50 Best Bars: Culinary Mixology Dominates Top Spot", source: "Global Bar Journal", time: "2 hours ago", image: "https://image.pollinations.ai/prompt/fancy%20cocktail%20in%20a%20dimly%20lit%20luxurious%20bar?width=600&height=400&nologo=true", snippet: "Savory cocktails, fat-washing techniques, and culinary broths are replacing traditional fruity profiles in London and New York speakeasies.", fullContent: "The global cocktail landscape is experiencing a massive shift toward savory flavors. Bartenders in London, Tokyo, and New York are increasingly borrowing techniques from fine-dining kitchens—using ingredients like MSG, mushrooms, bone broth, and olive oil fat-washing to create deeply complex savory drinks." },
+            { id: 2, category: 'tech', title: "Centrifuge & Clarification: The Next-Gen Speakeasy Standard", source: "Imbibe World", time: "5 hours ago", image: "https://image.pollinations.ai/prompt/crystal%20clear%20cocktail%20in%20a%20minimalist%20glass%20science%20lab%20bar?width=600&height=400&nologo=true", snippet: "High-volume cocktail bars are turning to milk clarification and centrifuges for crystal-clear texture and ultra-fast service times.", fullContent: "Clarified drinks are no longer just a gimmick. High-volume speakeasies are adopting milk-washing and lab-grade centrifuges to clarify citrus juices and spirits. This creates crystal-clear cocktails with a silky mouthfeel and significantly extended shelf life." },
+            { id: 3, category: 'eco', title: "Closed-Loop Bar Programs: Zero-Waste Ice & Citrus Upcycling", source: "Sustainable Spirits", time: "1 day ago", image: "https://image.pollinations.ai/prompt/bartender%20making%20cocktail%20with%20citrus%20peel%20garnish%20green%20lighting?width=600&height=400&nologo=true", snippet: "Top bars across Asia and Europe are transforming spent citrus husks into cordials, sherbets, and biodegradable glassware.", fullContent: "Eco-conscious mixology has evolved into 'closed-loop' bar systems. Spent fruit peels are dehydrated into garnishes, spent lime hulls are converted into oleo-saccharum cordials, and melt-water from ice programs is repurposed for dilution." }
+        ];
+
+        // --- FETCH DYNAMIC FUNDAMENTALS (MIXOLOGY 101) ---
+        async function loadFundamentals() {
+            try {
+                // Mencoba menarik data live dari server
+                const res = await fetch(`${API_URL}/public/fundamentals`);
+                if (!res.ok) throw new Error("Endpoint not available yet");
+                const data = await res.json();
+                fundamentalsData = data.fundamentals && data.fundamentals.length ? data.fundamentals : fallbackFundamentals;
+            } catch (err) {
+                console.log("Using fallback for Fundamentals due to network/API error.");
+                fundamentalsData = fallbackFundamentals;
+            }
+            renderFundamentals();
+        }
+
+        function renderFundamentals() {
+            const grid = document.getElementById('fundamentalsGrid');
+            if(!grid) return;
+            
+            grid.innerHTML = '';
+            fundamentalsData.forEach(item => {
+                grid.innerHTML += `
+                    <div onclick="openFundamentalsModal(${item.id})" class="cursor-pointer bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-blue-500/40 rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 shadow-xl group flex flex-col">
+                        <div class="h-32 relative overflow-hidden bg-black">
+                            <img src="${item.image}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600';" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 pointer-events-none opacity-80 group-hover:opacity-100">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
+                            <span class="absolute top-2.5 left-2.5 bg-blue-600/80 backdrop-blur-md border border-white/10 text-white text-[9px] font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider flex items-center gap-1"><i class="fa-solid ${item.icon}"></i> ${item.category}</span>
+                        </div>
+                        <div class="p-4 flex flex-col flex-grow">
+                            <h4 class="text-sm font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">${item.title}</h4>
+                            <p class="text-[11px] text-slate-300 line-clamp-3 leading-relaxed mb-3">${item.snippet}</p>
+                            <span class="text-[10px] font-bold text-blue-400 mt-auto flex items-center gap-1 group-hover:translate-x-1 transition-transform">Learn More <i class="fa-solid fa-arrow-right text-[8px]"></i></span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- FETCH DYNAMIC GLOBAL NEWS ---
+        async function loadBeverageNews() {
+            try {
+                // Mencoba menarik data live dari server
+                const res = await fetch(`${API_URL}/public/news`);
+                if (!res.ok) throw new Error("Endpoint not available yet");
+                const data = await res.json();
+                beverageNewsData = data.news && data.news.length ? data.news : fallbackNews;
+            } catch (err) {
+                console.log("Using fallback for News due to network/API error.");
+                beverageNewsData = fallbackNews;
+            }
+            renderBeverageNews();
+        }
+
+        let activeNewsFilter = 'all';
+        function renderBeverageNews() {
+            const grid = document.getElementById('newsGrid');
+            if(!grid) return;
+
+            const filtered = activeNewsFilter === 'all' 
+                ? beverageNewsData 
+                : beverageNewsData.filter(item => item.category === activeNewsFilter);
+
+            grid.innerHTML = '';
+            filtered.forEach(news => {
+                grid.innerHTML += `
+                    <div onclick="openNewsModal(${news.id})" class="cursor-pointer bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-amber-500/40 rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 shadow-xl group flex flex-col">
+                        <div class="h-36 relative overflow-hidden bg-black">
+                            <img src="${news.image}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600';" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 pointer-events-none">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+                            <span class="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur-md border border-white/10 text-amber-400 text-[9px] font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider">${news.category}</span>
+                        </div>
+                        <div class="p-4 flex flex-col flex-grow">
+                            <div class="flex justify-between items-center text-[10px] text-slate-400 mb-2 font-mono">
+                                <span><i class="fa-solid fa-newspaper mr-1 text-amber-500"></i>${news.source}</span>
+                                <span>${news.time}</span>
+                            </div>
+                            <h4 class="text-sm font-bold text-white mb-2 line-clamp-2 group-hover:text-amber-400 transition-colors">${news.title}</h4>
+                            <p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed mb-3">${news.snippet}</p>
+                            <span class="text-[10px] font-bold text-amber-500 mt-auto flex items-center gap-1 group-hover:translate-x-1 transition-transform">Read Story <i class="fa-solid fa-arrow-right text-[8px]"></i></span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // ==========================================
+        // MODALS LOGIC
+        // ==========================================
+        function openFundamentalsModal(id) {
+            const data = fundamentalsData.find(n => n.id === id);
+            if(!data) return;
+            const body = document.getElementById('fundamentalsModalBody');
+            body.innerHTML = `
+                <div class="mb-3 flex items-center text-[10px] text-blue-400 font-mono font-bold">
+                    <span class="bg-blue-500/20 px-2 py-1 rounded-lg border border-blue-500/30"><i class="fa-solid ${data.icon} mr-1"></i> ${data.category}</span>
+                </div>
+                <h3 class="text-xl font-extrabold text-white mb-3 leading-snug">${data.title}</h3>
+                <img src="${data.image}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600';" class="w-full h-36 object-cover rounded-xl mb-4 border border-white/10 shadow-lg">
+                <div class="text-xs text-slate-200 leading-relaxed bg-slate-950/70 p-4 rounded-xl border border-white/5 shadow-inner custom-scroll max-h-48 overflow-y-auto">
+                    ${data.fullContent}
+                </div>
+            `;
+            const m = document.getElementById('fundamentalsModal');
+            m.classList.remove('hidden'); m.classList.add('flex');
+            setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('fundamentalsModalContent').classList.remove('scale-95'); }, 10);
+        }
+
+        function closeFundamentalsModal() {
+            const m = document.getElementById('fundamentalsModal');
+            m.classList.add('opacity-0'); document.getElementById('fundamentalsModalContent').classList.add('scale-95');
+            setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300);
+        }
+
+        function filterNews(cat) {
+            activeNewsFilter = cat;
+            ['All', 'Bars', 'Tech', 'Eco'].forEach(c => {
+                const btn = document.getElementById(`tabNews${c}`);
+                if(btn) {
+                    if(c.toLowerCase() === cat || (cat==='all' && c==='All')) {
+                        btn.className = "px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 transition-all";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all";
+                    }
+                }
+            });
+            renderBeverageNews();
+        }
+
+        function openNewsModal(id) {
+            const news = beverageNewsData.find(n => n.id === id);
+            if(!news) return;
+            const body = document.getElementById('newsModalBody');
+            body.innerHTML = `
+                <div class="mb-4 flex items-center justify-between text-xs text-amber-400 font-mono">
+                    <span><i class="fa-solid fa-globe mr-1"></i> ${news.source}</span>
+                    <span>${news.time}</span>
+                </div>
+                <h3 class="text-xl font-extrabold text-white mb-3 leading-snug">${news.title}</h3>
+                <img src="${news.image}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600';" class="w-full h-48 object-cover rounded-2xl mb-4 border border-white/10 shadow-lg">
+                <p class="text-sm text-slate-200 leading-relaxed bg-slate-950/50 p-4 rounded-2xl border border-white/5 shadow-inner">${news.fullContent}</p>
+            `;
+            const m = document.getElementById('newsModal');
+            m.classList.remove('hidden'); m.classList.add('flex');
+            setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('newsModalContent').classList.remove('scale-95'); }, 10);
+        }
+
+        function closeNewsModal() {
+            const m = document.getElementById('newsModal');
+            m.classList.add('opacity-0'); document.getElementById('newsModalContent').classList.add('scale-95');
+            setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300);
+        }
+
+        // ==========================================
+        // OTHER LOGIC (UNCHANGED)
+        // ==========================================
         const cocktailHistories = [
-            "Tahukah Anda? Kata 'Cocktail' pertama kali muncul pada tahun 1806 di surat kabar The Balance and-Columbian Repository, didefinisikan sebagai campuran minuman keras, air, dan pemahit (bitters).",
-            "Era Pelarangan Alkohol (Prohibition) di Amerika Serikat (1920-1933) justru memicu popularitas cocktail, karena bartender harus mencampur jus buah dan madu untuk menutupi rasa alkohol selundupan.",
-            "Margarita, salah satu cocktail paling ikonik, diyakini diciptakan pada 1938 di Meksiko oleh Carlos Herrera untuk seorang penari yang alergi terhadap semua jenis alkohol kecuali Tequila.",
-            "Mojito berasal dari Kuba pada abad ke-16, awalnya diracik sebagai ramuan obat tradisional berbahan dasar rum tebu, daun mint liar, jeruk nipis, dan gula.",
-            "Old Fashioned, yang diciptakan pada awal abad ke-19, diberi nama sesuai dengan jenis gelas tempat ia disajikan.",
-            "Cosmopolitan diciptakan pada era 1980-an, tetapi meledak menjadi fenomena gaya hidup global berkat kemunculannya dalam serial TV populer 'Sex and the City'."
+            "Did you know? The word 'Cocktail' first appeared in 1806 in The Balance and-Columbian Repository newspaper.",
+            "The Prohibition Era in the United States (1920-1933) actually sparked cocktail popularity to mask smuggled alcohol.",
+            "The Margarita is believed to have been created in 1938 in Mexico for a dancer allergic to all alcohol except Tequila.",
+            "The Old Fashioned, created in the early 19th century, was named after the type of glass it is served in.",
+            "The Cosmopolitan exploded into a global lifestyle phenomenon thanks to its appearance in 'Sex and the City'."
+        ];
+
+        const mocktailHistories = [
+            "The Shirley Temple was created in the 1930s in Hollywood for the famous child actress.",
+            "The term 'Mocktail' gained massive popularity in the 2000s alongside the 'Sober Curious' lifestyle trend.",
+            "The Virgin Mary retains the rich, spicy tomato flavor of a Bloody Mary without a single drop of alcohol.",
+            "The Arnold Palmer is an iconic blend of iced tea and lemonade named after the legendary golfer."
         ];
 
         if (userToken && savedRole) { 
@@ -504,25 +832,70 @@
             if(!widget) return;
             try {
                 widget.style.opacity = 0.3;
-                const res = await fetch('https://www.thecocktaildb.com/api/json/v1/1/random.php');
-                const data = await res.json();
-                const drink = data.drinks[0];
+                
+                const isMocktail = Math.random() > 0.5;
+                const filterUrl = isMocktail 
+                    ? 'https://www.thecocktaildb.com/api/json/v1/1/filter.php?a=Non_Alcoholic'
+                    : 'https://www.thecocktaildb.com/api/json/v1/1/filter.php?a=Alcoholic';
+
+                const listRes = await fetch(filterUrl);
+                const listData = await listRes.json();
+                const randomDrink = listData.drinks[Math.floor(Math.random() * listData.drinks.length)];
+
+                const detailRes = await fetch(`https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=${randomDrink.idDrink}`);
+                const detailData = await detailRes.json();
+                const drink = detailData.drinks[0];
+
                 let ingredientsList = [];
-                for(let i=1; i<=5; i++) { if(drink[`strIngredient${i}`]) ingredientsList.push(drink[`strIngredient${i}`]); }
-                const randomHistory = cocktailHistories[Math.floor(Math.random() * cocktailHistories.length)];
+                for(let i=1; i<=5; i++) { 
+                    if(drink[`strIngredient${i}`]) {
+                        let measure = drink[`strMeasure${i}`] ? drink[`strMeasure${i}`].trim() + ' ' : '';
+                        ingredientsList.push(measure + drink[`strIngredient${i}`]);
+                    } 
+                }
+                
+                const historyArray = isMocktail ? mocktailHistories : cocktailHistories;
+                const randomHistory = historyArray[Math.floor(Math.random() * historyArray.length)];
                 
                 setTimeout(() => {
                     imgEl.src = drink.strDrinkThumb;
                     titleEl.innerText = drink.strDrink;
-                    badgeEl.innerText = drink.strAlcoholic || 'Unknown';
-                    const runningText = `🍹 Kategori: <span class="font-extrabold text-amber-500">${drink.strCategory}</span>  •  🥂 Disajikan di: <span class="text-amber-300">${drink.strGlass}</span>  •  🌿 Bahan Utama: <span class="text-amber-300">${ingredientsList.join(', ')}</span>  •  📜 <span class="text-white">${randomHistory}</span>  •  💡 Cara Pembuatan: ${drink.strInstructions.substring(0, 150)}...`;
+                    
+                    if (isMocktail) {
+                        badgeEl.innerHTML = '<i class="fa-solid fa-leaf mr-1"></i> Mocktail (Non-Alcoholic)';
+                        badgeEl.className = 'text-[9px] md:text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-lg border border-emerald-500/30 inline-block mx-auto md:mx-0 shadow-inner';
+                    } else {
+                        badgeEl.innerHTML = '<i class="fa-solid fa-fire mr-1"></i> Cocktail (Alcoholic)';
+                        badgeEl.className = 'text-[9px] md:text-[10px] font-extrabold bg-amber-500/20 text-amber-400 px-3 py-1 rounded-lg border border-amber-500/30 inline-block mx-auto md:mx-0 shadow-inner';
+                    }
+
+                    const runningText = `🌟 Category: <span class="font-extrabold text-amber-500">${drink.strCategory}</span> &nbsp;•&nbsp; 🥂 Served in: <span class="text-amber-300">${drink.strGlass}</span> &nbsp;•&nbsp; 🌿 Recipe: <span class="text-amber-300">${ingredientsList.join(', ')}</span> &nbsp;•&nbsp; 📜 Info: <span class="text-white">${randomHistory}</span> &nbsp;•&nbsp; 💡 Instructions: ${drink.strInstructions}`;
+                    
                     marqueeEl.style.animation = 'none';
                     marqueeEl.offsetHeight; 
-                    marqueeEl.style.animation = null;
+                    marqueeEl.style.animation = 'scrollText 45s linear infinite';
                     marqueeEl.innerHTML = runningText;
+                    
                     widget.style.opacity = 1;
                 }, 500); 
-            } catch (err) {}
+            } catch (err) {
+                console.error("Gagal memuat Global Spotlight", err);
+                
+                imgEl.src = "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=200&h=200&fit=crop";
+                titleEl.innerText = "Classic Old Fashioned (Offline Mode)";
+                
+                badgeEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Offline / Fallback';
+                badgeEl.className = 'text-[9px] md:text-[10px] font-extrabold bg-rose-500/20 text-rose-400 px-3 py-1 rounded-lg border border-rose-500/30 inline-block mx-auto md:mx-0 shadow-inner';
+                
+                const fallbackText = `⚠️ <span class="text-rose-400 font-bold">API Connection Blocked/Offline.</span> &nbsp;•&nbsp; 🌟 Category: <span class="font-extrabold text-amber-500">Classic</span> &nbsp;•&nbsp; 🌿 Recipe: <span class="text-amber-300">Bourbon, Angostura Bitters, Sugar Cube</span> &nbsp;•&nbsp; 💡 Please use Live Server or disable Adblocker to restore Live Spotlight feature.`;
+                
+                marqueeEl.style.animation = 'none';
+                marqueeEl.offsetHeight; 
+                marqueeEl.style.animation = 'scrollText 45s linear infinite';
+                marqueeEl.innerHTML = fallbackText;
+                
+                widget.style.opacity = 1; 
+            }
         }
 
         function switchAuthTab(tab) {
@@ -571,6 +944,11 @@
             document.getElementById('guestDashboard').classList.remove('hidden'); 
             document.getElementById('btnLogout').classList.remove('hidden'); 
             document.getElementById('btnLogout').classList.add('flex'); 
+            
+            // Panggil API untuk News dan Fundamentals
+            loadFundamentals(); 
+            loadBeverageNews(); 
+            
             loadGuestRecipes(); 
             fetchCocktailTrivia(); 
             clearInterval(triviaInterval);
@@ -590,7 +968,6 @@
             loadAdminUsers(); 
         }
 
-        // FITUR BARU: MUAT DATABASE GUEST & PEMBAYARAN DI ADMIN (Dengan Pelacak Error)
         async function loadAdminUsers() {
             try {
                 const res = await fetch(`${API_URL}/admin/users`, { headers: { 'Authorization': `Bearer ${userToken}` } });
@@ -598,9 +975,8 @@
                 const tbody = document.getElementById('adminUsersTableBody');
                 tbody.innerHTML = '';
                 
-                // Jika server mengirimkan pesan Error, tampilkan dengan warna merah
                 if (data.error) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-rose-500 font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i> ERROR DATABASE: ${data.error}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-rose-500 font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i> DATABASE ERROR: ${data.error}</td></tr>`;
                     return;
                 }
                 
@@ -622,38 +998,38 @@
                         `;
                     });
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500">Belum ada guest yang mendaftar.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500">No guests registered yet.</td></tr>`;
                 }
             } catch (err) {
-                document.getElementById('adminUsersTableBody').innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-rose-500 font-bold"><i class="fa-solid fa-plug-circle-xmark mr-2"></i> Server API belum di-restart / Route tidak ditemukan.</td></tr>`;
+                document.getElementById('adminUsersTableBody').innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-rose-500 font-bold"><i class="fa-solid fa-plug-circle-xmark mr-2"></i> API Server not restarted / Route not found.</td></tr>`;
             }
         }
 
         async function processRegister() {
             const fullName = document.getElementById('regFullName').value, email = document.getElementById('regEmail').value, username = document.getElementById('regUsername').value, password = document.getElementById('regPassword').value, msg = document.getElementById('authMsg');
-            if(!fullName || !email || !username || !password) { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = "Mohon lengkapi data."; return; }
+            if(!fullName || !email || !username || !password) { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = "Please complete all fields."; return; }
             try {
                 const res = await fetch(`${API_URL}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, full_name: fullName, username }) });
                 const data = await res.json();
-                if(res.status === 201) { msg.className = "mt-4 text-center text-emerald-400 text-xs bg-emerald-500/10 p-3 rounded-xl block"; msg.textContent = "Registrasi Berhasil! Silakan LOGIN."; setTimeout(() => switchAuthTab('login'), 2000); } 
-                else { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = data.error || "Gagal Registrasi."; }
+                if(res.status === 201) { msg.className = "mt-4 text-center text-emerald-400 text-xs bg-emerald-500/10 p-3 rounded-xl block"; msg.textContent = "Registration Successful! Please LOGIN."; setTimeout(() => switchAuthTab('login'), 2000); } 
+                else { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = data.error || "Registration Failed."; }
             } catch (err) { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = "Network Error."; }
         }
 
         async function processLogin() {
             const email = document.getElementById('loginEmail').value, password = document.getElementById('loginPassword').value, msg = document.getElementById('authMsg');
-            if(!email || !password) { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = "Masukkan data."; return; }
+            if(!email || !password) { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = "Please enter your credentials."; return; }
             try {
                 const res = await fetch(`${API_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
                 const data = await res.json();
                 if (data.token) { userToken = data.token; currentRole = intendedRole || 'guest'; localStorage.setItem('cocktail_token', userToken); localStorage.setItem('cocktail_role', currentRole); currentRole === 'guest' ? showGuestDashboard() : showAdminDashboard(); } 
-                else { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = data.error || "Data salah."; }
+                else { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = data.error || "Invalid credentials."; }
             } catch (err) { msg.className = "mt-4 text-center text-rose-400 text-xs bg-rose-500/10 p-3 rounded-xl block"; msg.textContent = "Network Error."; }
         }
         function logout() { localStorage.removeItem('cocktail_token'); localStorage.removeItem('cocktail_role'); location.reload(); }
 
         function downloadExcelWithImages() {
-            if (!currentDisplayedRecipes.length) return alert("Data kosong!");
+            if (!currentDisplayedRecipes.length) return alert("No data available!");
             if (currentRole === 'guest') { const m = document.getElementById('paymentModal'); m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('paymentModalContent').classList.remove('scale-95'); }, 10); } 
             else { generateAndDownloadExcel(); }
         }
@@ -677,9 +1053,10 @@
             let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>table { border-collapse: collapse; font-family: Arial; } th { background-color: #FCE66D; font-weight: bold; text-align: left; padding: 15px; border: 1px solid #CBD5E1; } td { padding: 12px; border: 1px solid #CBD5E1; vertical-align: top; }</style></head><body><table border="1"><thead><tr><th width="200">NAME</th><th width="120">IMAGE</th><th width="200">ASSETS</th><th width="350">INGREDIENTS</th><th width="500">INSTRUCTIONS</th></tr></thead><tbody>`;
             currentDisplayedRecipes.forEach(r => {
                 const img = r.image || `https://image.pollinations.ai/prompt/A%20glass%20of%20${encodeURIComponent(r.name)}?width=120&height=120&nologo=true`;
-                const ings = (r.all_ingredients || r.ingredients || []).map(i => `- ${i.name} (${i.amount||''} ${i.unit||''})`).join(br);
+                const normalized = getNormalizedIngredients(r);
+                const ings = normalized.map(i => `- ${i.name} (${i.amount||''} ${i.unit||''})`).join(br);
                 const insts = (r.instructions || []).map((s, idx) => `${idx+1}. ${s}`).join(br+br);
-                tableHtml += `<tr><td><b>${r.name}</b></td><td height="120" style="height:120px; text-align:center;"><img src="${img}" width="100" height="100" /><br><a href="${img}">Link</a></td><td>Kategori: ${r.category||'Bar'}${br}Gelas: ${r.glassware||'Standard'}</td><td>${ings}</td><td>${insts}</td></tr>`;
+                tableHtml += `<tr><td><b>${r.name}</b></td><td height="120" style="height:120px; text-align:center;"><img src="${img}" width="100" height="100" /><br><a href="${img}">Link</a></td><td>Category: ${r.category||'Bar'}${br}Glass: ${r.glassware||'Standard'}</td><td>${ings}</td><td>${insts}</td></tr>`;
             });
             tableHtml += `</tbody></table></body></html>`;
             const blob = new Blob(['\uFEFF' + tableHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
@@ -691,6 +1068,8 @@
             document.getElementById('addName').value = '';
             document.getElementById('addCategory').value = '';
             document.getElementById('addGlass').value = '';
+            document.getElementById('addTastingNotes').value = ''; 
+            document.getElementById('addRecommendations').value = '';
             document.getElementById('addIngredients').value = '';
             document.getElementById('addInstructions').value = '';
             document.getElementById('addRecipeModalTitle').innerHTML = `<i class="fa-solid fa-plus text-amber-500 mr-2"></i> Add New Cocktail`;
@@ -706,7 +1085,9 @@
             document.getElementById('addName').value = recipe.name;
             document.getElementById('addCategory').value = recipe.category || '';
             document.getElementById('addGlass').value = recipe.glassware || '';
-            const ings = recipe.all_ingredients || recipe.ingredients || [];
+            document.getElementById('addTastingNotes').value = recipe.tasting_notes || '';
+            document.getElementById('addRecommendations').value = recipe.recommendations || '';
+            const ings = getNormalizedIngredients(recipe);
             document.getElementById('addIngredients').value = ings.map(i => { const amt = (i.amount || '') + ' ' + (i.unit || ''); return amt.trim() ? `${amt.trim()} ${i.name}` : i.name; }).join('\n');
             const insts = recipe.instructions || [];
             document.getElementById('addInstructions').value = insts.join('\n');
@@ -718,11 +1099,21 @@
         function closeAddModal() { const m = document.getElementById('addRecipeModal'); m.classList.add('opacity-0'); document.getElementById('addRecipeModalContent').classList.add('scale-95'); setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
         
         async function submitManualRecipe() {
-            const name = document.getElementById('addName').value.trim(), category = document.getElementById('addCategory').value.trim(), glass = document.getElementById('addGlass').value.trim(), ingRaw = document.getElementById('addIngredients').value.trim(), instRaw = document.getElementById('addInstructions').value.trim();
+            const name = document.getElementById('addName').value.trim(), 
+                  category = document.getElementById('addCategory').value.trim(), 
+                  glass = document.getElementById('addGlass').value.trim(), 
+                  tasting = document.getElementById('addTastingNotes').value.trim(),
+                  recom = document.getElementById('addRecommendations').value.trim(),
+                  ingRaw = document.getElementById('addIngredients').value.trim(), 
+                  instRaw = document.getElementById('addInstructions').value.trim();
             if(!name || !ingRaw || !instRaw) return alert("Name, Ingredients, and Instructions are required!");
             const ingredients = ingRaw.split('\n').filter(i => i.trim()).map(i => ({ name: i.trim(), amount: null, unit: "" }));
             const instructions = instRaw.split('\n').filter(i => i.trim()).map(i => i.trim());
-            const recipe = { recipe_name: name, category: category || "Custom", glassware: glass || "Standard", ingredients, instructions, is_complete: true };
+            const recipe = { 
+                recipe_name: name, category: category || "Custom", glassware: glass || "Standard", 
+                tasting_notes: tasting, recommendations: recom,
+                ingredients, instructions, is_complete: true 
+            };
             showLoading(true);
             try {
                 const url = editingRecipeId ? `${API_URL}/recipes/edit/${editingRecipeId}` : `${API_URL}/recipes/add-manual`;
@@ -736,7 +1127,7 @@
         async function processExcelImport() {
             const fileInput = document.getElementById('adminExcelUpload');
             const file = fileInput.files[0];
-            if (!file) return alert("Pilih file Excel terlebih dahulu!");
+            if (!file) return alert("Please select an Excel file first!");
             showLoading(true);
             const reader = new FileReader();
             reader.onload = async function(e) {
@@ -759,10 +1150,10 @@
                         await fetch(`${API_URL}/recipes/add-manual`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userToken}` }, body: JSON.stringify({ recipe }) });
                         successCount++;
                     }
-                    alert(`${successCount} Resep dari Excel berhasil ditambahkan ke Vault!`);
+                    alert(`${successCount} recipes from Excel successfully added to Vault!`);
                     fileInput.value = '';
                     loadAdminRecipes(); 
-                } catch (err) { alert("Gagal membaca Excel."); } finally { showLoading(false); }
+                } catch (err) { alert("Failed to read Excel file."); } finally { showLoading(false); }
             };
             reader.readAsArrayBuffer(file);
         }
@@ -777,20 +1168,90 @@
         async function saveGlobalRecipe(recipeId) { const recipe = currentGlobalRecipes.find(r => r.id === recipeId); if (!recipe || !confirm(`Save "${recipe.name}"?`)) return; showLoading(true); try { const res = await fetch(`${API_URL}/recipes/save-global`, { method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${userToken}` }, body: JSON.stringify({ recipe }) }); const data = await res.json(); if(data.success) { alert("Saved!"); loadAdminRecipes(); } } catch (err) {} finally { showLoading(false); } }
         async function uploadAdminPDF() { const file = document.getElementById('adminPdfUpload').files[0]; if (!file) return; const fd = new FormData(); fd.append('pdf', file); showLoading(true); try { await fetch(`${API_URL}/recipes/import-pdf`, { method: 'POST', headers: { 'Authorization': `Bearer ${userToken}` }, body: fd }); alert("Extracted!"); loadAdminRecipes(); } catch (err) {} finally { showLoading(false); document.getElementById('adminPdfUpload').value=''; } }
 
+        function getNormalizedIngredients(recipe) {
+            const raw = recipe.all_ingredients || recipe.ingredients || [];
+            return raw.map(i => {
+                if (typeof i === 'string') {
+                    return { name: i, amount: '', unit: '' };
+                }
+                return {
+                    name: i.name || i.ingredient || i.strIngredient || '',
+                    amount: i.amount || i.measure || i.strMeasure || '',
+                    unit: i.unit || ''
+                };
+            });
+        }
+
         function renderGrid(list, containerId, isRec = false, isGlobal = false) {
             currentDisplayedRecipes = list; const container = document.getElementById(containerId); container.innerHTML = '';
             if (!list.length) return container.innerHTML = `<div class="col-span-full py-10 text-center text-slate-500">No results found.</div>`;
             list.forEach((recipe, idx) => {
                 recipe._isGlobalSearch = isGlobal; 
+                const normalizedIngs = getNormalizedIngredients(recipe);
+                const calculatedABV = estimateABV(normalizedIngs);
+                
                 let badge = '';
-                if (isGlobal && currentRole === 'admin') badge = `<button onclick="event.stopPropagation(); saveGlobalRecipe('${recipe.id}')" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg z-20 relative pointer-events-auto">Save</button>`;
-                else if (isRec && recipe.match_percentage) badge = `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-full text-[9px] font-extrabold flex items-center gap-1 z-20 relative"><i class="fa-solid fa-star"></i> ${recipe.match_percentage}%</span>`;
+                if (calculatedABV > 0) {
+                    let abvColor = calculatedABV >= 25 ? 'bg-rose-500/90 text-white' : 
+                                   (calculatedABV >= 10 ? 'bg-amber-500/90 text-slate-950' : 'bg-emerald-500/90 text-slate-950');
+                    badge += `<span class="${abvColor} px-2.5 py-1 rounded-full text-[9px] font-extrabold flex items-center gap-1 shadow-md mb-1 backdrop-blur-sm"><i class="fa-solid fa-fire"></i> ${calculatedABV}% ABV</span>`;
+                } else if (calculatedABV == 0 && normalizedIngs.length > 0) {
+                    badge += `<span class="bg-emerald-500/90 text-slate-950 px-2.5 py-1 rounded-full text-[9px] font-extrabold flex items-center gap-1 shadow-md mb-1 backdrop-blur-sm"><i class="fa-solid fa-leaf"></i> 0% ABV</span>`;
+                }
+
+                if (isGlobal && currentRole === 'admin') badge += `<button onclick="event.stopPropagation(); saveGlobalRecipe('${recipe.id}')" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg z-20 relative pointer-events-auto">Save</button>`;
+                else if (isRec && recipe.match_percentage) badge += `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-full text-[9px] font-extrabold flex items-center gap-1 z-20 relative"><i class="fa-solid fa-star"></i> ${recipe.match_percentage}%</span>`;
+                
                 const aiImg = `https://image.pollinations.ai/prompt/A%20glass%20of%20${encodeURIComponent(recipe.name)}%20cocktail,%20dark%20bar?width=300&height=300&nologo=true`;
                 const fallImg = "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=300&q=80";
-                const ings = (isRec && recipe.all_ingredients ? recipe.all_ingredients : recipe.ingredients) || [];
-                const ingHTML = ings.map(i => `<li class="text-[10px] sm:text-xs text-slate-200 py-1 flex justify-between"><span class="truncate pr-2"><i class="fa-solid fa-circle text-[4px] text-amber-500/60 mr-2"></i>${i.name}</span><span class="text-slate-400 font-mono text-[9px] bg-black/40 px-1.5 rounded">${i.amount||''} ${i.unit||''}</span></li>`).join('');
-                container.innerHTML += `<div onclick="openRecipeModal(${idx})" class="cursor-pointer animate-fade-in-up bg-slate-900/70 backdrop-blur-xl border border-white/10 hover:border-amber-500/40 hover:-translate-y-1 hover:shadow-2xl rounded-2xl flex flex-col transition-all group overflow-hidden"><div class="h-36 relative bg-black"><img src="${recipe.image || aiImg}" onerror="this.onerror=null;this.src='${fallImg}';" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 pointer-events-none"><div class="absolute inset-0 bg-gradient-to-t from-slate-900/95 to-transparent"></div><div class="absolute top-2 right-2 z-10">${badge}</div><div class="absolute bottom-2 left-3 right-3 z-10"><h4 class="text-sm font-extrabold text-white truncate drop-shadow-lg">${recipe.name}</h4></div></div><div class="p-3 flex flex-col flex-grow"><div class="flex gap-2 mb-2 text-[9px] text-slate-300"><span class="bg-white/5 px-2 py-1 rounded truncate shadow-sm">${recipe.category||'Cocktail'}</span></div><div class="bg-black/30 p-2 rounded-xl border border-white/5 relative flex-grow"><ul class="max-h-16 overflow-hidden relative space-y-0.5">${ingHTML}<div class="absolute bottom-0 w-full h-6 bg-gradient-to-t from-slate-900 to-transparent"></div></ul></div></div></div>`;
+                const ingHTML = normalizedIngs.map(i => `<li class="text-[10px] sm:text-xs text-slate-200 py-1 flex justify-between"><span class="truncate pr-2"><i class="fa-solid fa-circle text-[4px] text-amber-500/60 mr-2"></i>${i.name}</span><span class="text-slate-400 font-mono text-[9px] bg-black/40 px-1.5 rounded">${i.amount||''} ${i.unit||''}</span></li>`).join('');
+                container.innerHTML += `<div onclick="openRecipeModal(${idx})" class="cursor-pointer animate-fade-in-up bg-slate-900/70 backdrop-blur-xl border border-white/10 hover:border-amber-500/40 hover:-translate-y-1 hover:shadow-2xl rounded-2xl flex flex-col transition-all group overflow-hidden"><div class="h-36 relative bg-black"><img src="${recipe.image || aiImg}" onerror="this.onerror=null;this.src='${fallImg}';" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 pointer-events-none"><div class="absolute inset-0 bg-gradient-to-t from-slate-900/95 to-transparent"></div><div class="absolute top-2 right-2 z-10 flex flex-col items-end">${badge}</div><div class="absolute bottom-2 left-3 right-3 z-10"><h4 class="text-sm font-extrabold text-white truncate drop-shadow-lg">${recipe.name}</h4></div></div><div class="p-3 flex flex-col flex-grow"><div class="flex gap-2 mb-2 text-[9px] text-slate-300"><span class="bg-white/5 px-2 py-1 rounded truncate shadow-sm">${recipe.category||'Cocktail'}</span></div><div class="bg-black/30 p-2 rounded-xl border border-white/5 relative flex-grow"><ul class="max-h-16 overflow-hidden relative space-y-0.5">${ingHTML}<div class="absolute bottom-0 w-full h-6 bg-gradient-to-t from-slate-900 to-transparent"></div></ul></div></div></div>`;
             });
+        }
+
+        function estimateABV(ingredients) {
+            const abvDatabase = {
+                'vodka': 40, 'gin': 40, 'rum': 40, 'tequila': 40, 'whiskey': 40, 'bourbon': 40, 'rye': 40, 'cognac': 40,
+                'dry vermouth': 15, 'sweet vermouth': 15, 'vermouth': 15, 'lillet': 17, 'dubonnet': 15, 'suze': 20,
+                'campari': 25, 'aperol': 11, 'kahlua': 20, 'baileys': 17, 
+                'triple sec': 30, 'cointreau': 40, 'amaretto': 28, 'absinthe': 60,
+                'wine': 12, 'champagne': 12, 'prosecco': 11, 'beer': 5
+            };
+
+            let totalAlcoholVolume = 0;
+            let totalLiquidVolume = 0;
+
+            ingredients.forEach(ing => {
+                let name = typeof ing === 'string' ? ing.toLowerCase() : (ing.name || '').toLowerCase();
+                let amountStr = typeof ing === 'string' ? ing.toLowerCase() : ((ing.amount || '') + ' ' + (ing.unit || '')).toLowerCase();
+                
+                let match = amountStr.match(/(\d+(\.\d+)?)/) || name.match(/(\d+(\.\d+)?)/);
+                let volume = match ? parseFloat(match[1]) : 0;
+
+                if (amountStr.includes('oz') || name.includes('oz')) {
+                    volume *= 30; 
+                } else if (volume === 0 && (amountStr.includes('cl') || name.includes('cl'))) {
+                    volume *= 10;
+                }
+
+                let abv = 0;
+                for (let key in abvDatabase) {
+                    if (name.includes(key)) {
+                        abv = abvDatabase[key];
+                        if (volume === 0) volume = 30;
+                        break;
+                    }
+                }
+
+                if (volume > 0) {
+                    totalLiquidVolume += volume;
+                    totalAlcoholVolume += (volume * (abv / 100)); 
+                }
+            });
+
+            if (totalLiquidVolume === 0) return 0;
+            let finalABV = (totalAlcoholVolume / totalLiquidVolume) * 100;
+            return finalABV.toFixed(1); 
         }
 
         function openRecipeModal(idx) {
@@ -799,18 +1260,98 @@
             document.getElementById('modalImage').src = recipe.image || `https://image.pollinations.ai/prompt/A%20glass%20of%20${encodeURIComponent(recipe.name)}%20cocktail?width=800&height=600&nologo=true`; 
             document.getElementById('modalImage').onerror = function(){this.src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800";}; 
             
+            const normalizedIngs = getNormalizedIngredients(recipe);
+            const calculatedABV = estimateABV(normalizedIngs);
+            
             let badgesHtml = `<span class="bg-black/40 border border-white/20 px-3 py-1.5 rounded-lg shadow-sm">${recipe.category||'Cocktail'}</span>`;
+            if (calculatedABV > 0) {
+                let abvColor = calculatedABV >= 25 ? 'bg-rose-500/20 text-rose-400 border-rose-500/50' : 
+                               (calculatedABV >= 10 ? 'bg-amber-500/20 text-amber-400 border-amber-500/50' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50');
+                badgesHtml += `<span class="${abvColor} border px-3 py-1.5 rounded-lg shadow-sm font-extrabold flex items-center gap-1"><i class="fa-solid fa-fire"></i> Est. ${calculatedABV}% ABV</span>`;
+            } else if (calculatedABV == 0 && normalizedIngs.length > 0) {
+                badgesHtml += `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 px-3 py-1.5 rounded-lg shadow-sm font-extrabold flex items-center gap-1"><i class="fa-solid fa-leaf"></i> 0% ABV (Mocktail)</span>`;
+            }
+
             if(currentRole === 'admin' && recipe.id && !recipe._isGlobalSearch) {
-                badgesHtml += `<button onclick="openEditMode(${idx})" class="bg-amber-500/20 text-amber-400 border border-amber-500/50 hover:bg-amber-500 hover:text-slate-950 px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-2 pointer-events-auto shadow-lg"><i class="fa-solid fa-pen-to-square"></i> Edit Recipe</button>`;
+                badgesHtml += `<button onclick="openEditMode(${idx})" class="bg-blue-500/20 text-blue-400 border border-blue-500/50 hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-2 pointer-events-auto shadow-lg"><i class="fa-solid fa-pen-to-square"></i> Edit</button>`;
             }
             document.getElementById('modalBadges').innerHTML = badgesHtml;
 
-            const ings = (recipe.all_ingredients || recipe.ingredients || []); 
-            document.getElementById('modalIngredients').innerHTML = ings.map(i => `<li class="flex justify-between border-b border-white/5 py-2"><span class="text-slate-200 text-sm"><i class="fa-solid fa-circle text-[5px] text-amber-500/80 mr-3"></i>${i.name}</span><span class="text-amber-400 font-mono text-xs bg-black/40 px-2 py-1 rounded">${i.amount||''} ${i.unit||''}</span></li>`).join('');
+            document.getElementById('modalIngredients').innerHTML = normalizedIngs.map(i => `<li class="flex justify-between border-b border-white/5 py-2"><span class="text-slate-200 text-sm"><i class="fa-solid fa-circle text-[5px] text-amber-500/80 mr-3"></i>${i.name}</span><span class="text-amber-400 font-mono text-xs bg-black/40 px-2 py-1 rounded">${i.amount||''} ${i.unit||''}</span></li>`).join('');
             
             const inst = recipe.instructions || []; 
             document.getElementById('modalInstructions').innerHTML = inst.map((s, i) => `<div class="flex gap-4 p-3 hover:bg-white/5 rounded-xl"><span class="text-amber-500 font-bold bg-amber-500/10 w-7 h-7 flex items-center justify-center rounded-lg border border-amber-500/20 shrink-0">${i+1}</span><p class="text-slate-300 text-sm">${s}</p></div>`).join('');
             
+            let tastingNotes = recipe.tasting_notes || "";
+            let recommendations = recipe.recommendations || "";
+
+            if (!tastingNotes || !recommendations) {
+                const nameLower = (recipe.name || '').toLowerCase();
+                const ingString = normalizedIngs.map(i => i.name.toLowerCase()).join(" ");
+                
+                if (nameLower === 'negroni' || (nameLower.includes('negroni') && !nameLower.includes('french') && !nameLower.includes('garibaldi'))) {
+                    tastingNotes = "<b>Flavor Profile:</b> Iconic, complex bittersweet sensation. Starts with caramel sweetness from vermouth, followed by intense botanical gin, finishing with a deep herbal bitterness from Campari on the back palate.";
+                    recommendations = "Classic <b>Unisex (Men & Women)</b> drink for experienced/mature cocktail drinkers seeking depth. <b>NOT</b> recommended for beginners.";
+                } else if (nameLower.includes('french negroni')) {
+                    tastingNotes = "<b>Flavor Profile:</b> Brighter, more floral, and aromatic variant. Lillet Blanc adds honey and apricot nuances, dampening the harsh bitterness into a refined, dry herbal finish.";
+                    recommendations = "Perfect for <b>Women</b> who appreciate elegant dry wines, or <b>Men</b> who want a lighter, floral cocktail. Strong ABV but refined.";
+                } else if (nameLower.includes('garibaldi')) {
+                    tastingNotes = "<b>Flavor Profile:</b> Vibrant citrus freshness blending with Campari's bitterness. Fresh orange juice adds a fluffy texture that smooths out alcohol heat.";
+                    recommendations = "Highly <b>Easy-Drinking & Beginner-Friendly (Men & Women)</b>. Great choice for <b>Women</b> who want to explore Negroni flavors without harsh bitterness.";
+                } else if (nameLower.includes('londontini')) {
+                    tastingNotes = "<b>Flavor Profile:</b> Zero percent sweet. On the palate, you feel an instant alcohol heat kick, followed by a dry, tart, and earthy vermouth finish.";
+                    recommendations = "Very <b>masculine</b> profile. Recommended for <b>Men</b> or pure alcohol enthusiasts (high ABV). Less suitable for <b>Women</b> seeking fruity/sweet drinks.";
+                } else {
+                    const hasSweet = /syrup|sugar|honey|grenadine|cola|sweet|agave/i.test(ingString);
+                    const hasSour = /lemon|lime|citrus|grapefruit|yuzu/i.test(ingString);
+                    const hasBitter = /campari|vermouth|bitter|tonic|aperol|coffee|suze/i.test(ingString);
+                    const hasFruity = /pineapple|orange|apple|juice|cranberry|peach|mango/i.test(ingString);
+                    const hasCream = /milk|cream|baileys|kahlua/i.test(ingString);
+
+                    let notes = [];
+                    let rec = "";
+
+                    if (calculatedABV >= 25) {
+                        notes.push(`Spirit-forward with high potency (Est. ${calculatedABV}% ABV). Delivers a noticeable alcohol warmth on the throat.`);
+                        rec = "Suitable for Men or seasoned drinkers. Strictly <b>NOT</b> for beginners.";
+                    } else if (calculatedABV > 0 && calculatedABV <= 12) {
+                        notes.push(`Low alcohol content (Est. ${calculatedABV}% ABV), gentle on the palate.`);
+                    } else if (calculatedABV == 0) {
+                        notes.push("Non-alcoholic beverage (0% ABV). Pure refreshing flavor without alcohol heat.");
+                        rec = "Safe for everyone (Unisex, Beginners, All ages).";
+                    }
+
+                    if (hasCream) {
+                        notes.push("Creamy and smooth texture, disguising alcohol heat like a liquid dessert.");
+                        rec = rec || "Highly recommended for Women or dessert-style drink lovers.";
+                    } else if (hasSweet && hasSour) {
+                        notes.push("Perfect Sweet & Sour balance stimulating salivary response. Very refreshing.");
+                        rec = rec || "Very safe for beginners (both Men and Women).";
+                    } else if (hasBitter && hasSweet) {
+                        notes.push("Complex bittersweet profile featuring herbal/botanical undertones.");
+                        rec = rec || "Recommended for sophisticated palates who dislike sugary drinks.";
+                    } else if (hasFruity) {
+                        notes.push("Fruit-forward profile masking underlying spirits well.");
+                        rec = rec || "Great for Women or casual beach/lounge drinkers.";
+                    }
+
+                    if (notes.length === 0) notes.push("A clean, balanced cocktail profile on the palate.");
+                    if (!rec) rec = "Suitable for general bar goers (Unisex).";
+
+                    tastingNotes = "<b>Palate Analysis:</b> " + notes.join(" ");
+                    recommendations = rec;
+                }
+            }
+
+            const extraNotesContainer = document.getElementById('modalExtraNotes');
+            if (tastingNotes || recommendations) {
+                extraNotesContainer.classList.remove('hidden');
+                document.getElementById('modalTastingNotes').innerHTML = tastingNotes;
+                document.getElementById('modalRecommendations').innerHTML = recommendations;
+            } else {
+                extraNotesContainer.classList.add('hidden');
+            }
+
             const m = document.getElementById('recipeModal'); m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('recipeModalContent').classList.remove('scale-95'); }, 10);
         }
         function closeRecipeModal() { const m = document.getElementById('recipeModal'); m.classList.add('opacity-0'); document.getElementById('recipeModalContent').classList.add('scale-95'); setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
